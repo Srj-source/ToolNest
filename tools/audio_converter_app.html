@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Audio Converter</title>
+  <style>
+    :root {
+      --bg-1: #0b1120;
+      --bg-2: #131c31;
+      --card: rgba(15, 23, 42, 0.72);
+      --line: rgba(255, 255, 255, 0.08);
+      --text: #eef2ff;
+      --muted: #cbd5e1;
+      --accent: #8b5cf6;
+      --accent-2: #06b6d4;
+      --accent-3: #22c55e;
+      --warning: #f59e0b;
+      --danger: #fb7185;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 12%, rgba(139, 92, 246, 0.24), transparent 24%),
+        radial-gradient(circle at 88% 18%, rgba(6, 182, 212, 0.16), transparent 22%),
+        radial-gradient(circle at 50% 100%, rgba(34, 197, 94, 0.12), transparent 25%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      padding: 28px 16px 40px;
+    }
+
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-left {
+      padding: 34px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 13px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #dbeafe;
+      font-size: 0.92rem;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2.2rem, 4vw, 3.9rem);
+      line-height: 1.03;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: #dbe3f0;
+      line-height: 1.75;
+      max-width: 62ch;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 26px;
+    }
+
+    .stat {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.045);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .stat strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 1.06rem;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .upload-panel {
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .upload-panel::before {
+      content: "";
+      position: absolute;
+      right: -40px;
+      bottom: -40px;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.24), transparent 70%);
+      pointer-events: none;
+    }
+
+    .dropzone {
+      width: 100%;
+      border: 1.5px dashed rgba(255, 255, 255, 0.18);
+      border-radius: 22px;
+      padding: 30px 24px;
+      background: rgba(255, 255, 255, 0.03);
+      text-align: center;
+      transition: 0.25s ease;
+    }
+
+    .dropzone.dragover {
+      transform: translateY(-2px);
+      border-color: var(--accent-2);
+      background: rgba(6, 182, 212, 0.08);
+    }
+
+    .dropzone h3 {
+      margin: 14px 0 8px;
+      font-size: 1.2rem;
+    }
+
+    .dropzone p {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .btn,
+    .btn-secondary,
+    .icon-btn {
+      border: 0;
+      cursor: pointer;
+      transition: transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .btn:hover,
+    .btn-secondary:hover,
+    .icon-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 700;
+      box-shadow: 0 12px 30px rgba(6, 182, 212, 0.18);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      padding: 13px 18px;
+      border-radius: 14px;
+      font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .icon-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: inline-grid;
+      place-items: center;
+      font-size: 1rem;
+    }
+
+    .hidden-input { display: none; }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 24px;
+    }
+
+    .editor,
+    .sidebar {
+      padding: 24px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .section-title h2,
+    .section-title h3 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+
+    .audio-card,
+    .control-card,
+    .format-card,
+    .sidebar-card,
+    .preview-card {
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 16px;
+    }
+
+    .file-name {
+      font-weight: 700;
+      word-break: break-word;
+      margin-bottom: 6px;
+    }
+
+    .file-meta {
+      color: var(--muted);
+      font-size: 0.93rem;
+      line-height: 1.7;
+    }
+
+    .visual {
+      height: 150px;
+      border-radius: 18px;
+      background:
+        linear-gradient(180deg, rgba(6,182,212,0.14), rgba(139,92,246,0.08)),
+        repeating-linear-gradient(
+          90deg,
+          rgba(255,255,255,0.085) 0px,
+          rgba(255,255,255,0.085) 4px,
+          transparent 4px,
+          transparent 10px
+        );
+      display: grid;
+      place-items: center;
+      color: rgba(255,255,255,0.8);
+      text-align: center;
+      padding: 20px;
+      line-height: 1.6;
+      margin-top: 14px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .pill {
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 0.93rem;
+    }
+
+    .pill strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 1rem;
+      color: white;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    input[type="text"],
+    select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+      outline: none;
+    }
+
+    .format-options {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .format-chip {
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.045);
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s ease;
+      user-select: none;
+    }
+
+    .format-chip.active {
+      border-color: rgba(6, 182, 212, 0.55);
+      background: linear-gradient(135deg, rgba(139,92,246,0.18), rgba(6,182,212,0.14));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+    }
+
+    .format-chip strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .format-chip span {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    audio {
+      width: 100%;
+      margin-top: 14px;
+      filter: invert(1) hue-rotate(180deg);
+      opacity: 0.92;
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .status {
+      min-height: 24px;
+      margin-top: 14px;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+    }
+
+    .status.success { color: #86efac; }
+    .status.error { color: #fda4af; }
+    .status.warn { color: #fcd34d; }
+
+    .download-link {
+      display: none;
+      margin-top: 12px;
+      text-decoration: none;
+      color: white;
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-weight: 700;
+    }
+
+    .download-link.show { display: inline-block; }
+
+    .muted {
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 0.95rem;
+    }
+
+    .note {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.18);
+      color: #fde68a;
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 960px) {
+      .hero,
+      .workspace,
+      .hero-stats,
+      .stats-grid,
+      .control-grid,
+      .format-options {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <div class="panel hero-left">
+        <div class="badge">🎼 Elegant Browser Audio Converter</div>
+        <h1>Convert audio files with a sleek, modern frontend.</h1>
+        <p class="subtitle">
+          Upload an audio file, preview it, choose conversion settings, and export it in a browser-friendly format.
+          This version includes real WAV export and demo-ready format options for a polished converter experience.
+        </p>
+
+        <div class="hero-stats">
+          <div class="stat">
+            <strong>Fast upload</strong>
+            <span>Drag and drop any audio file</span>
+          </div>
+          <div class="stat">
+            <strong>Clean controls</strong>
+            <span>Choose format, sample rate, and name</span>
+          </div>
+          <div class="stat">
+            <strong>Ready export</strong>
+            <span>Download converted audio instantly</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel upload-panel">
+        <div class="dropzone" id="dropzone">
+          <div style="font-size: 2.5rem;">🎧</div>
+          <h3>Upload an audio file</h3>
+          <p>Drag and drop MP3, WAV, M4A, OGG, or other audio files here</p>
+          <button class="btn" id="browseBtn">Choose Audio File</button>
+          <input class="hidden-input" type="file" id="audioFile" accept="audio/*" />
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <div class="panel editor">
+        <div class="section-title">
+          <h2>Converter Workspace</h2>
+          <button class="btn-secondary" id="resetBtn">Reset</button>
+        </div>
+
+        <div class="audio-card">
+          <div class="file-name" id="fileName">No file selected</div>
+          <div class="file-meta" id="fileMeta">Upload an audio file to start conversion.</div>
+          <audio id="audioPlayer" controls></audio>
+
+          <div class="visual">
+            Your uploaded track will be decoded in the browser and prepared for export.
+          </div>
+
+          <div class="stats-grid">
+            <div class="pill">Duration<strong id="durationValue">00:00</strong></div>
+            <div class="pill">Channels<strong id="channelValue">0</strong></div>
+            <div class="pill">Sample Rate<strong id="sampleRateValue">0 Hz</strong></div>
+          </div>
+        </div>
+
+        <div class="control-card">
+          <div class="control-grid">
+            <div>
+              <label for="outputName">Output file name</label>
+              <input type="text" id="outputName" placeholder="converted-audio" />
+            </div>
+            <div>
+              <label for="targetSampleRate">Target sample rate</label>
+              <select id="targetSampleRate">
+                <option value="44100">44100 Hz</option>
+                <option value="48000">48000 Hz</option>
+                <option value="32000">32000 Hz</option>
+                <option value="22050">22050 Hz</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="format-card">
+          <label>Choose output format</label>
+          <div class="format-options">
+            <div class="format-chip active" data-format="wav">
+              <strong>WAV</strong>
+              <span>Real export</span>
+            </div>
+            <div class="format-chip" data-format="mp3">
+              <strong>MP3</strong>
+              <span>UI demo mode</span>
+            </div>
+            <div class="format-chip" data-format="ogg">
+              <strong>OGG</strong>
+              <span>UI demo mode</span>
+            </div>
+          </div>
+
+          <div class="note" id="formatNote">
+            WAV export is fully generated in-browser. MP3 and OGG are shown as interface options, but this pure HTML/JS demo exports WAV without external encoding libraries.
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="btn" id="convertBtn">Convert Audio</button>
+          <button class="btn-secondary" id="previewBtn">Preview</button>
+        </div>
+
+        <div class="status" id="status"></div>
+        <a id="downloadLink" class="download-link" download>Download Converted Audio</a>
+      </div>
+
+      <div class="panel sidebar">
+        <div class="section-title">
+          <h3>Tools & Tips</h3>
+        </div>
+
+        <div class="sidebar-card">
+          <h4 style="margin:0 0 10px;">How it works</h4>
+          <p class="muted">
+            1. Upload audio<br />
+            2. Choose a target format<br />
+            3. Select a sample rate<br />
+            4. Convert and download
+          </p>
+        </div>
+
+        <div class="sidebar-card">
+          <h4 style="margin:0 0 10px;">Best use cases</h4>
+          <p class="muted">
+            Prepare audio for editing, standardize files, reduce compatibility issues, or export clean WAV files directly from your browser.
+          </p>
+        </div>
+
+        <div class="preview-card">
+          <h4 style="margin:0 0 10px;">Technical note</h4>
+          <p class="muted">
+            Pure browser code can reliably decode many formats and export WAV. For real MP3, AAC, or OGG encoding, you would usually add an encoder library or backend service.
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const audioFileInput = document.getElementById('audioFile');
+    const browseBtn = document.getElementById('browseBtn');
+    const dropzone = document.getElementById('dropzone');
+    const fileName = document.getElementById('fileName');
+    const fileMeta = document.getElementById('fileMeta');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const durationValue = document.getElementById('durationValue');
+    const channelValue = document.getElementById('channelValue');
+    const sampleRateValue = document.getElementById('sampleRateValue');
+    const outputNameInput = document.getElementById('outputName');
+    const targetSampleRateSelect = document.getElementById('targetSampleRate');
+    const convertBtn = document.getElementById('convertBtn');
+    const previewBtn = document.getElementById('previewBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const statusEl = document.getElementById('status');
+    const downloadLink = document.getElementById('downloadLink');
+    const formatNote = document.getElementById('formatNote');
+    const formatChips = document.querySelectorAll('.format-chip');
+
+    let audioContext;
+    let audioBuffer = null;
+    let currentFile = null;
+    let selectedFormat = 'wav';
+
+    function formatTime(seconds) {
+      if (!isFinite(seconds)) return '00:00';
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function setStatus(message, type = '') {
+      statusEl.textContent = message;
+      statusEl.className = `status ${type}`.trim();
+    }
+
+    function resetDownload() {
+      downloadLink.classList.remove('show');
+      downloadLink.removeAttribute('href');
+    }
+
+    function updateFormatUI() {
+      formatChips.forEach(chip => {
+        chip.classList.toggle('active', chip.dataset.format === selectedFormat);
+      });
+
+      if (selectedFormat === 'wav') {
+        formatNote.textContent = 'WAV export is fully generated in-browser. This is the most reliable format for this pure HTML, CSS, and JavaScript version.';
+      } else {
+        formatNote.textContent = `${selectedFormat.toUpperCase()} is shown as a frontend option. In this pure browser demo, the file is exported as WAV for reliable conversion unless you add an external encoder library.`;
+      }
+    }
+
+    async function ensureAudioContext() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioContext;
+    }
+
+    async function loadAudioFile(file) {
+      try {
+        currentFile = file;
+        resetDownload();
+        setStatus('Loading audio file...');
+
+        const context = await ensureAudioContext();
+        const arrayBuffer = await file.arrayBuffer();
+        audioBuffer = await context.decodeAudioData(arrayBuffer.slice(0));
+
+        const objectUrl = URL.createObjectURL(file);
+        audioPlayer.src = objectUrl;
+        fileName.textContent = file.name;
+        fileMeta.textContent = `Type: ${file.type || 'Unknown'} • Size: ${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+        durationValue.textContent = formatTime(audioBuffer.duration);
+        channelValue.textContent = String(audioBuffer.numberOfChannels);
+        sampleRateValue.textContent = `${audioBuffer.sampleRate} Hz`;
+        outputNameInput.value = file.name.replace(/\.[^/.]+$/, '') + '-converted';
+
+        setStatus('Audio loaded successfully. Choose settings and convert.', 'success');
+      } catch (error) {
+        console.error(error);
+        setStatus('Could not decode this audio file. Please try another one.', 'error');
+      }
+    }
+
+    function audioBufferToWav(buffer) {
+      const numChannels = buffer.numberOfChannels;
+      const sampleRate = buffer.sampleRate;
+      const bitDepth = 16;
+      const format = 1;
+      const samples = buffer.length;
+      const blockAlign = numChannels * bitDepth / 8;
+      const byteRate = sampleRate * blockAlign;
+      const dataSize = samples * blockAlign;
+      const arrayBuffer = new ArrayBuffer(44 + dataSize);
+      const view = new DataView(arrayBuffer);
+      let offset = 0;
+
+      function writeString(str) {
+        for (let i = 0; i < str.length; i++) {
+          view.setUint8(offset++, str.charCodeAt(i));
+        }
+      }
+
+      writeString('RIFF');
+      view.setUint32(offset, 36 + dataSize, true); offset += 4;
+      writeString('WAVE');
+      writeString('fmt ');
+      view.setUint32(offset, 16, true); offset += 4;
+      view.setUint16(offset, format, true); offset += 2;
+      view.setUint16(offset, numChannels, true); offset += 2;
+      view.setUint32(offset, sampleRate, true); offset += 4;
+      view.setUint32(offset, byteRate, true); offset += 4;
+      view.setUint16(offset, blockAlign, true); offset += 2;
+      view.setUint16(offset, bitDepth, true); offset += 2;
+      writeString('data');
+      view.setUint32(offset, dataSize, true); offset += 4;
+
+      const channels = [];
+      for (let channel = 0; channel < numChannels; channel++) {
+        channels.push(buffer.getChannelData(channel));
+      }
+
+      for (let i = 0; i < samples; i++) {
+        for (let channel = 0; channel < numChannels; channel++) {
+          let sample = Math.max(-1, Math.min(1, channels[channel][i]));
+          sample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+          view.setInt16(offset, sample, true);
+          offset += 2;
+        }
+      }
+
+      return new Blob([arrayBuffer], { type: 'audio/wav' });
+    }
+
+    async function resampleBuffer(inputBuffer, targetSampleRate) {
+      if (inputBuffer.sampleRate === targetSampleRate) {
+        return inputBuffer;
+      }
+
+      const duration = inputBuffer.duration;
+      const frameCount = Math.ceil(duration * targetSampleRate);
+      const offlineContext = new OfflineAudioContext(inputBuffer.numberOfChannels, frameCount, targetSampleRate);
+      const source = offlineContext.createBufferSource();
+      source.buffer = inputBuffer;
+      source.connect(offlineContext.destination);
+      source.start(0);
+      return await offlineContext.startRendering();
+    }
+
+    async function convertAudio() {
+      if (!audioBuffer) {
+        setStatus('Upload an audio file first.', 'error');
+        return;
+      }
+
+      try {
+        setStatus('Converting audio...');
+        resetDownload();
+
+        const targetSampleRate = Number(targetSampleRateSelect.value);
+        const processedBuffer = await resampleBuffer(audioBuffer, targetSampleRate);
+        const wavBlob = audioBufferToWav(processedBuffer);
+        const url = URL.createObjectURL(wavBlob);
+        const outputName = (outputNameInput.value || 'converted-audio').trim();
+        const finalExtension = selectedFormat === 'wav' ? 'wav' : 'wav';
+
+        downloadLink.href = url;
+        downloadLink.download = `${outputName}.${finalExtension}`;
+        downloadLink.classList.add('show');
+
+        if (selectedFormat === 'wav') {
+          setStatus('Audio converted successfully and exported as WAV.', 'success');
+        } else {
+          setStatus(`${selectedFormat.toUpperCase()} was selected in the UI, but this pure frontend version exported WAV for reliable browser-based conversion.`, 'warn');
+        }
+      } catch (error) {
+        console.error(error);
+        setStatus('Something went wrong while converting the audio.', 'error');
+      }
+    }
+
+    browseBtn.addEventListener('click', () => audioFileInput.click());
+
+    audioFileInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (file) loadAudioFile(file);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+      });
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      const file = e.dataTransfer.files?.[0];
+      if (file && file.type.startsWith('audio/')) {
+        loadAudioFile(file);
+      } else {
+        setStatus('Please drop a valid audio file.', 'error');
+      }
+    });
+
+    formatChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        selectedFormat = chip.dataset.format;
+        updateFormatUI();
+      });
+    });
+
+    previewBtn.addEventListener('click', () => {
+      if (!audioPlayer.src) {
+        setStatus('Upload an audio file first.', 'error');
+        return;
+      }
+      audioPlayer.play();
+      setStatus('Previewing audio...');
+    });
+
+    convertBtn.addEventListener('click', convertAudio);
+
+    resetBtn.addEventListener('click', () => {
+      audioFileInput.value = '';
+      currentFile = null;
+      audioBuffer = null;
+      audioPlayer.pause();
+      audioPlayer.removeAttribute('src');
+      audioPlayer.load();
+      fileName.textContent = 'No file selected';
+      fileMeta.textContent = 'Upload an audio file to start conversion.';
+      durationValue.textContent = '00:00';
+      channelValue.textContent = '0';
+      sampleRateValue.textContent = '0 Hz';
+      outputNameInput.value = '';
+      targetSampleRateSelect.value = '44100';
+      selectedFormat = 'wav';
+      updateFormatUI();
+      resetDownload();
+      setStatus('Converter reset.');
+    });
+
+    updateFormatUI();
+  </script>
+</body>
+</html>
