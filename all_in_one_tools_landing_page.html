@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ToolNest - All-in-One Online Tools</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-soft: #111827;
+      --card: rgba(255, 255, 255, 0.08);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --text: #f8fafc;
+      --muted: #cbd5e1;
+      --accent: #38bdf8;
+      --accent-2: #a78bfa;
+      --success: #34d399;
+      --shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+      --radius: 22px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Inter, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.22), transparent 28%),
+        radial-gradient(circle at top right, rgba(167, 139, 250, 0.20), transparent 30%),
+        linear-gradient(180deg, #020617 0%, #0f172a 52%, #111827 100%);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      width: min(1200px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(14px);
+      background: rgba(2, 6, 23, 0.68);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 16px 0;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+
+    .logo-badge {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: var(--shadow);
+      font-size: 1.3rem;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .hero {
+      padding: 72px 0 40px;
+    }
+
+    .hero-wrap {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .hero-text h1 {
+      font-size: clamp(2.3rem, 5vw, 4.2rem);
+      line-height: 1.08;
+      margin-bottom: 18px;
+      font-weight: 900;
+    }
+
+    .hero-text p {
+      color: var(--muted);
+      font-size: 1.08rem;
+      max-width: 720px;
+      margin-bottom: 26px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .btn {
+      border: none;
+      cursor: pointer;
+      padding: 14px 20px;
+      border-radius: 14px;
+      font-weight: 700;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      opacity: 0.96;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      box-shadow: var(--shadow);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 16px;
+      backdrop-filter: blur(12px);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.4rem;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .hero-card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.05));
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 28px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .mini-card {
+      background: rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .section-title {
+      margin: 28px 0 18px;
+      font-size: 1.75rem;
+      font-weight: 800;
+    }
+
+    .search-panel {
+      margin: 20px 0 30px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 18px;
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+      display: grid;
+      gap: 14px;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 260px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(2, 6, 23, 0.45);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 14px 16px;
+    }
+
+    .search-box input,
+    .filter-select {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      width: 100%;
+      font-size: 1rem;
+    }
+
+    .filter-select {
+      background: rgba(2, 6, 23, 0.45);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 14px 16px;
+      min-width: 220px;
+    }
+
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 18px;
+      margin: 22px 0 36px;
+    }
+
+    .category-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      transition: transform 0.22s ease, border-color 0.22s ease;
+    }
+
+    .category-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(56, 189, 248, 0.5);
+    }
+
+    .category-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .category-head h3 {
+      font-size: 1.1rem;
+    }
+
+    .count {
+      font-size: 0.84rem;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+
+    .tool-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tool-tag {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 9px 12px;
+      border-radius: 999px;
+      color: #e2e8f0;
+      font-size: 0.92rem;
+      transition: all 0.2s ease;
+    }
+
+    .tool-tag:hover {
+      background: rgba(56, 189, 248, 0.16);
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+
+    .feature-banner {
+      margin: 18px 0 40px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.14), rgba(167, 139, 250, 0.14));
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .feature-item {
+      background: rgba(255,255,255,0.06);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .feature-item strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 1rem;
+    }
+
+    .feature-item span {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .empty-state {
+      display: none;
+      text-align: center;
+      padding: 28px;
+      color: var(--muted);
+      background: rgba(255,255,255,0.05);
+      border-radius: 18px;
+      border: 1px dashed rgba(255,255,255,0.14);
+      margin-bottom: 24px;
+    }
+
+    footer {
+      padding: 36px 0 52px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 980px) {
+      .hero-wrap,
+      .feature-banner {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .nav {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .nav-links {
+        gap: 10px 14px;
+      }
+
+      .hero {
+        padding-top: 50px;
+      }
+
+      .section-title {
+        font-size: 1.4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <div class="logo">
+        <div class="logo-badge">⚡</div>
+        <span>ToolNest</span>
+      </div>
+      <nav class="nav-links">
+        <a href="#tools">Tools</a>
+        <a href="#features">Features</a>
+        <a href="#categories">Categories</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero container">
+      <div class="hero-wrap">
+        <div class="hero-text">
+          <h1>All your everyday tools in one clean and simple place.</h1>
+          <p>
+            Search, browse, and access hundreds of useful tools for audio, video, images, PDFs,
+            files, internet, calculators, study needs, and system utilities — all from one attractive landing page.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#tools">Explore Tools</a>
+            <a class="btn btn-secondary" href="#features">See Features</a>
+          </div>
+          <div class="hero-stats">
+            <div class="stat"><strong>150+</strong><span>Useful tools</span></div>
+            <div class="stat"><strong>8</strong><span>Main categories</span></div>
+            <div class="stat"><strong>1</strong><span>Fast search bar</span></div>
+          </div>
+        </div>
+        <div class="hero-card">
+          <h3>Why users will love it</h3>
+          <div class="mini-grid">
+            <div class="mini-card">🔎 Quick live search</div>
+            <div class="mini-card">📂 Easy category filtering</div>
+            <div class="mini-card">✨ Modern responsive design</div>
+            <div class="mini-card">⚙️ Simple and clean layout</div>
+          </div>
+          <p style="margin-top:16px; color: var(--muted);">
+            Perfect for a tools website, all codes are owned by srj-source. no data stored in database for a nano-second
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="container" id="features">
+      <h2 class="section-title">Important Features</h2>
+      <div class="feature-banner">
+        <div class="feature-item"><strong>Smart Search</strong><span>Instantly find any tool by name.</span></div>
+        <div class="feature-item"><strong>Category Filter</strong><span>Browse tools by audio, video, PDF, and more.</span></div>
+        <div class="feature-item"><strong>Responsive UI</strong><span>Works smoothly on desktop, tablet, and mobile.</span></div>
+        <div class="feature-item"><strong>Easy to Use</strong><span>Simple cards and clean layout for fast navigation.</span></div>
+      </div>
+    </section>
+
+    <section class="container" id="tools">
+      <h2 class="section-title">Find the perfect tool</h2>
+      <div class="search-panel">
+        <div class="search-row">
+          <div class="search-box">
+            <span>🔍</span>
+            <input type="text" id="searchInput" placeholder="Search tools like PDF merger, video cutter, OCR, calculator..." />
+          </div>
+          <select id="categoryFilter" class="filter-select">
+            <option value="all">All Categories</option>
+          </select>
+        </div>
+      </div>
+      <div id="emptyState" class="empty-state">No matching tools found. Try another keyword or category.</div>
+      <div class="category-grid" id="categories"></div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+built by srj-source,you can donate me a coffee
+    </div>
+  </footer>
+
+  <script>
+    const toolsData = [
+      {
+        name: "🎵 Audio Tools",
+        icon: "🎵",
+        tools: [
+          "Audio cutter","Audio merger","Audio splitter","Audio converter","Audio compressor","Audio volume booster","Audio speed changer","Audio pitch changer","Noise remover","Voice recorder","Ringtone maker","Audio to text","Text to speech","Audio tag editor","Audio joiner","Audio trimmer","Audio equalizer","Audio normalizer","Mic tester","Sound generator"
+        ]
+      },
+      {
+        name: "🎥 Video Tools",
+        icon: "🎥",
+        tools: [
+          "Video cutter","Video merger","Video converter","Video compressor","Video to audio","Audio to video","Video speed changer","Video rotator","Video cropper","Add subtitles to video","Remove audio from video","Screen recorder","Webcam recorder","GIF maker","Video watermark remover","Video watermark adder","Video resizer","Video thumbnail maker","Video stabilizer","Video frame extractor"
+        ]
+      },
+      {
+        name: "🖼️ Image Tools",
+        icon: "🖼️",
+        tools: [
+          "Image to PDF","PDF to image","Image resizer","Image compressor","Image cropper","Image rotator","Image format converter","Background remover","Photo editor","Watermark adder","Watermark remover","Image sharpener","Blur image","Screenshot tool","Image to text (OCR)","Color picker","Meme generator","Collage maker","Photo filter tool","Face blur tool"
+        ]
+      },
+      {
+        name: "📄 PDF Tools",
+        icon: "📄",
+        tools: [
+          "JPG to PDF","PDF to JPG","PDF merger","PDF splitter","PDF compressor","PDF editor","Add page numbers to PDF","Add watermark to PDF","Remove password from PDF","Protect PDF with password","Word to PDF","Excel to PDF","PPT to PDF","PDF to Word","PDF to Excel","PDF to PPT","Rotate PDF","Delete PDF pages","Extract PDF pages","Sign PDF"
+        ]
+      },
+      {
+        name: "📁 File Tools",
+        icon: "📁",
+        tools: [
+          "File converter","File compressor (ZIP)","File extractor (ZIP/RAR)","File renamer","Duplicate file remover","File size reducer","File splitter","File merger","File downloader","ISO extractor","USB bootable maker","File search tool","File organizer","File encryptor","File decryptor"
+        ]
+      },
+      {
+        name: "🌐 Internet Tools",
+        icon: "🌐",
+        tools: [
+          "URL shortener","QR code generator","QR code scanner","Password generator","Password strength checker","Random number generator","Random name picker","Website screenshot tool","Website downloader","Internet speed test","IP address finder","Location finder","Whois domain lookup","Unit converter","Currency converter","Time zone converter","Online notepad","Markdown editor","JSON formatter","HTML viewer"
+        ]
+      },
+      {
+        name: "🔢 Calculator Tools",
+        icon: "🔢",
+        tools: [
+          "Calculator","Age calculator","Percentage calculator","EMI calculator","Loan calculator","GST calculator","Discount calculator","BMI calculator","Date difference calculator","Time duration calculator","Scientific calculator","Binary calculator","GPA calculator","Salary calculator","Profit loss calculator"
+        ]
+      },
+      {
+        name: "🧑‍🎓 Student & Text Tools",
+        icon: "🧑‍🎓",
+        tools: [
+          "Notes maker","To-do list","Text editor","Grammar checker","Paraphrasing tool","Plagiarism checker","Word counter","Character counter","Case converter","Text to handwriting","Handwriting to text","Flashcard maker","Mind map maker","Resume builder","Letter writer","Essay writer","Text summarizer","Speech to text","Translator","Dictionary"
+        ]
+      },
+      {
+        name: "🔐 Security & System Tools",
+        icon: "🔐",
+        tools: [
+          "Password manager","File locker","Folder locker","Image locker","Video locker","Data backup tool","Data recovery tool","Disk cleaner","RAM cleaner","Duplicate photo remover","Antivirus scanner","App lock","System info viewer","Battery health checker","Storage analyzer"
+        ]
+      }
+    ];
+
+    const categoriesContainer = document.getElementById('categories');
+    const searchInput = document.getElementById('searchInput');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const emptyState = document.getElementById('emptyState');
+
+    function populateFilter() {
+      toolsData.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.name;
+        option.textContent = category.name;
+        categoryFilter.appendChild(option);
+      });
+    }
+
+    function renderCategories() {
+      const searchValue = searchInput.value.toLowerCase().trim();
+      const selectedCategory = categoryFilter.value;
+      categoriesContainer.innerHTML = '';
+
+      let visibleCards = 0;
+
+      toolsData.forEach(category => {
+        const categoryMatch = selectedCategory === 'all' || selectedCategory === category.name;
+        if (!categoryMatch) return;
+
+        const filteredTools = category.tools.filter(tool =>
+          tool.toLowerCase().includes(searchValue) || category.name.toLowerCase().includes(searchValue)
+        );
+
+        if (filteredTools.length === 0 && searchValue) return;
+
+        visibleCards++;
+        const card = document.createElement('div');
+        card.className = 'category-card';
+
+        card.innerHTML = `
+          <div class="category-head">
+            <h3>${category.name}</h3>
+            <span class="count">${filteredTools.length || category.tools.length}</span>
+          </div>
+          <div class="tool-list">
+            ${(filteredTools.length ? filteredTools : category.tools)
+              .map(tool => `<a href="#" class="tool-tag">${tool}</a>`)
+              .join('')}
+          </div>
+        `;
+
+        categoriesContainer.appendChild(card);
+      });
+
+      emptyState.style.display = visibleCards === 0 ? 'block' : 'none';
+    }
+
+    populateFilter();
+    renderCategories();
+
+    searchInput.addEventListener('input', renderCategories);
+    categoryFilter.addEventListener('change', renderCategories);
+  </script>
+</body>
+</html>
