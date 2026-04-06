@@ -1,0 +1,827 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Audio Volume Booster</title>
+  <style>
+    :root {
+      --bg-1: #08111f;
+      --bg-2: #111b31;
+      --card: rgba(12, 19, 38, 0.74);
+      --line: rgba(255, 255, 255, 0.08);
+      --text: #eef4ff;
+      --muted: #cbd5e1;
+      --accent: #8b5cf6;
+      --accent-2: #06b6d4;
+      --accent-3: #22c55e;
+      --warning: #f59e0b;
+      --danger: #fb7185;
+      --shadow: 0 28px 80px rgba(0, 0, 0, 0.36);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 12%, rgba(139, 92, 246, 0.24), transparent 24%),
+        radial-gradient(circle at 88% 15%, rgba(6, 182, 212, 0.18), transparent 22%),
+        radial-gradient(circle at 50% 100%, rgba(34, 197, 94, 0.12), transparent 28%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      padding: 28px 16px 40px;
+    }
+
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-left {
+      padding: 34px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 13px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #dbeafe;
+      font-size: 0.92rem;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2.2rem, 4vw, 3.9rem);
+      line-height: 1.03;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: #dbe3f0;
+      line-height: 1.75;
+      max-width: 62ch;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 26px;
+    }
+
+    .stat {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.045);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .stat strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 1.06rem;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .upload-panel {
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .upload-panel::before {
+      content: "";
+      position: absolute;
+      right: -40px;
+      bottom: -40px;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.24), transparent 70%);
+      pointer-events: none;
+    }
+
+    .dropzone {
+      width: 100%;
+      border: 1.5px dashed rgba(255, 255, 255, 0.18);
+      border-radius: 22px;
+      padding: 30px 24px;
+      background: rgba(255, 255, 255, 0.03);
+      text-align: center;
+      transition: 0.25s ease;
+    }
+
+    .dropzone.dragover {
+      transform: translateY(-2px);
+      border-color: var(--accent-2);
+      background: rgba(6, 182, 212, 0.08);
+    }
+
+    .dropzone h3 {
+      margin: 14px 0 8px;
+      font-size: 1.2rem;
+    }
+
+    .dropzone p {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .btn,
+    .btn-secondary {
+      border: 0;
+      cursor: pointer;
+      transition: transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .btn:hover,
+    .btn-secondary:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 700;
+      box-shadow: 0 12px 30px rgba(6, 182, 212, 0.18);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      padding: 13px 18px;
+      border-radius: 14px;
+      font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .hidden-input { display: none; }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 24px;
+    }
+
+    .editor,
+    .sidebar {
+      padding: 24px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .section-title h2,
+    .section-title h3 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+
+    .card {
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 16px;
+    }
+
+    .file-name {
+      font-weight: 700;
+      word-break: break-word;
+      margin-bottom: 6px;
+    }
+
+    .file-meta {
+      color: var(--muted);
+      font-size: 0.93rem;
+      line-height: 1.7;
+    }
+
+    .visual {
+      height: 150px;
+      border-radius: 18px;
+      background:
+        linear-gradient(180deg, rgba(6,182,212,0.14), rgba(139,92,246,0.08)),
+        repeating-linear-gradient(
+          90deg,
+          rgba(255,255,255,0.085) 0px,
+          rgba(255,255,255,0.085) 4px,
+          transparent 4px,
+          transparent 10px
+        );
+      display: grid;
+      place-items: center;
+      color: rgba(255,255,255,0.8);
+      text-align: center;
+      padding: 20px;
+      line-height: 1.6;
+      margin-top: 14px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .pill {
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 0.93rem;
+    }
+
+    .pill strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 1rem;
+      color: white;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    input[type="text"],
+    select,
+    input[type="range"] {
+      width: 100%;
+    }
+
+    input[type="text"],
+    select {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+      outline: none;
+    }
+
+    input[type="range"] {
+      appearance: none;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.14);
+      outline: none;
+      margin-top: 8px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border: 2px solid white;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+    }
+
+    .slider-box {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .slider-value {
+      margin-top: 8px;
+      color: #e2e8f0;
+      font-size: 0.92rem;
+    }
+
+    .meter {
+      margin-top: 14px;
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .meter-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #22c55e, #f59e0b, #fb7185);
+      transition: width 0.25s ease;
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    audio {
+      width: 100%;
+      margin-top: 14px;
+      filter: invert(1) hue-rotate(180deg);
+      opacity: 0.92;
+    }
+
+    .status {
+      min-height: 24px;
+      margin-top: 14px;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+    }
+
+    .status.success { color: #86efac; }
+    .status.error { color: #fda4af; }
+    .status.warn { color: #fcd34d; }
+
+    .download-link {
+      display: none;
+      margin-top: 12px;
+      text-decoration: none;
+      color: white;
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-weight: 700;
+    }
+
+    .download-link.show { display: inline-block; }
+
+    .muted {
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 0.95rem;
+    }
+
+    .note {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.18);
+      color: #fde68a;
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 960px) {
+      .hero,
+      .workspace,
+      .hero-stats,
+      .stats-grid,
+      .control-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <div class="panel hero-left">
+        <div class="badge">🔊 Premium Audio Volume Booster</div>
+        <h1>Boost audio loudness with a polished modern interface.</h1>
+        <p class="subtitle">
+          Upload an audio file, increase gain, preview the louder result, and export a boosted WAV file directly in your browser.
+          The interface is stylish, responsive, and built with pure HTML, CSS, and JavaScript.
+        </p>
+
+        <div class="hero-stats">
+          <div class="stat">
+            <strong>Easy upload</strong>
+            <span>Drag and drop your audio quickly</span>
+          </div>
+          <div class="stat">
+            <strong>Gain control</strong>
+            <span>Boost volume with a smooth slider</span>
+          </div>
+          <div class="stat">
+            <strong>Instant export</strong>
+            <span>Download louder WAV output</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel upload-panel">
+        <div class="dropzone" id="dropzone">
+          <div style="font-size: 2.5rem;">🎵</div>
+          <h3>Upload an audio file</h3>
+          <p>Drag and drop MP3, WAV, M4A, OGG, or other audio files here</p>
+          <button class="btn" id="browseBtn">Choose Audio File</button>
+          <input class="hidden-input" type="file" id="audioFile" accept="audio/*" />
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <div class="panel editor">
+        <div class="section-title">
+          <h2>Volume Booster Workspace</h2>
+          <button class="btn-secondary" id="resetBtn">Reset</button>
+        </div>
+
+        <div class="card">
+          <div class="file-name" id="fileName">No file selected</div>
+          <div class="file-meta" id="fileMeta">Upload an audio file to start boosting volume.</div>
+          <audio id="audioPlayer" controls></audio>
+
+          <div class="visual">
+            The booster amplifies your waveform and applies gentle limiting to reduce clipping in the exported file.
+          </div>
+
+          <div class="stats-grid">
+            <div class="pill">Duration<strong id="durationValue">00:00</strong></div>
+            <div class="pill">Channels<strong id="channelValue">0</strong></div>
+            <div class="pill">Sample Rate<strong id="sampleRateValue">0 Hz</strong></div>
+            <div class="pill">Original Size<strong id="originalSizeValue">0 MB</strong></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="control-grid">
+            <div>
+              <label for="outputName">Output file name</label>
+              <input type="text" id="outputName" placeholder="boosted-audio" />
+            </div>
+            <div>
+              <label for="limiterMode">Limiter mode</label>
+              <select style="background-color:blue"id="limiterMode">
+                <option value="soft">Soft limiter</option>
+                <option value="hard">Hard limiter</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="control-grid">
+            <div class="slider-box">
+              <label for="gainRange">Volume boost</label>
+              <input type="range" id="gainRange" min="100" max="300" value="150" step="5" />
+              <div class="slider-value" id="gainValue">150% boost</div>
+              <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
+            </div>
+            <div class="slider-box">
+              <label for="ceilingRange">Output ceiling</label>
+              <input type="range" id="ceilingRange" min="70" max="100" value="95" step="1" />
+              <div class="slider-value" id="ceilingValue">95% ceiling</div>
+              <div class="note">Lower ceiling values can help reduce distortion on very loud files.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="btn" id="boostBtn">Boost Volume</button>
+          <button class="btn-secondary" id="previewBtn">Preview</button>
+        </div>
+
+        <div class="status" id="status"></div>
+        <a id="downloadLink" class="download-link" download>Download Boosted Audio</a>
+      </div>
+
+      <div class="panel sidebar">
+        <div class="section-title">
+          <h3>Tools & Tips</h3>
+        </div>
+
+        <div class="card">
+          <h4 style="margin:0 0 10px;">How it works</h4>
+          <p class="muted">
+            1. Upload audio<br />
+            2. Increase boost level<br />
+            3. Adjust output ceiling<br />
+            4. Preview and export louder audio
+          </p>
+        </div>
+
+        <div class="card">
+          <h4 style="margin:0 0 10px;">Best usage tip</h4>
+          <p class="muted">
+            Start with 125% to 160% boost for music. For voice recordings, higher gain can work well, but listen for distortion and reduce the ceiling if needed.
+          </p>
+        </div>
+
+      </div>
+    </section>
+  </div>
+ <footer >
+    <div class="container">
+      <a style=" color: white;"
+     
+    href="https://srj-source.github.io/coffee.html">built by srj-source,you can donate me a coffee</a>
+    </div>
+  </footer>
+
+  <script>
+    const audioFileInput = document.getElementById('audioFile');
+    const browseBtn = document.getElementById('browseBtn');
+    const dropzone = document.getElementById('dropzone');
+    const fileName = document.getElementById('fileName');
+    const fileMeta = document.getElementById('fileMeta');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const durationValue = document.getElementById('durationValue');
+    const channelValue = document.getElementById('channelValue');
+    const sampleRateValue = document.getElementById('sampleRateValue');
+    const originalSizeValue = document.getElementById('originalSizeValue');
+    const outputNameInput = document.getElementById('outputName');
+    const limiterMode = document.getElementById('limiterMode');
+    const gainRange = document.getElementById('gainRange');
+    const gainValue = document.getElementById('gainValue');
+    const ceilingRange = document.getElementById('ceilingRange');
+    const ceilingValue = document.getElementById('ceilingValue');
+    const meterFill = document.getElementById('meterFill');
+    const boostBtn = document.getElementById('boostBtn');
+    const previewBtn = document.getElementById('previewBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const statusEl = document.getElementById('status');
+    const downloadLink = document.getElementById('downloadLink');
+
+    let audioContext;
+    let audioBuffer = null;
+    let currentFile = null;
+
+    function formatTime(seconds) {
+      if (!isFinite(seconds)) return '00:00';
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function setStatus(message, type = '') {
+      statusEl.textContent = message;
+      statusEl.className = `status ${type}`.trim();
+    }
+
+    function resetDownload() {
+      downloadLink.classList.remove('show');
+      downloadLink.removeAttribute('href');
+    }
+
+    function updateBoostUI() {
+      gainValue.textContent = `${gainRange.value}% boost`;
+      ceilingValue.textContent = `${ceilingRange.value}% ceiling`;
+      const meterValue = Math.min(100, Math.max(0, ((Number(gainRange.value) - 100) / 200) * 100));
+      meterFill.style.width = `${meterValue}%`;
+    }
+
+    async function ensureAudioContext() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioContext;
+    }
+
+    async function loadAudioFile(file) {
+      try {
+        currentFile = file;
+        resetDownload();
+        setStatus('Loading audio file...');
+
+        const context = await ensureAudioContext();
+        const arrayBuffer = await file.arrayBuffer();
+        audioBuffer = await context.decodeAudioData(arrayBuffer.slice(0));
+
+        const objectUrl = URL.createObjectURL(file);
+        audioPlayer.src = objectUrl;
+        fileName.textContent = file.name;
+        fileMeta.textContent = `Type: ${file.type || 'Unknown'} • Size: ${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+        durationValue.textContent = formatTime(audioBuffer.duration);
+        channelValue.textContent = String(audioBuffer.numberOfChannels);
+        sampleRateValue.textContent = `${audioBuffer.sampleRate} Hz`;
+        originalSizeValue.textContent = `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+        outputNameInput.value = file.name.replace(/\.[^/.]+$/, '') + '-boosted';
+
+        setStatus('Audio loaded successfully. Adjust volume settings and export.', 'success');
+      } catch (error) {
+        console.error(error);
+        setStatus('Could not decode this audio file. Please try another one.', 'error');
+      }
+    }
+
+    function audioBufferToWav(buffer) {
+      const numChannels = buffer.numberOfChannels;
+      const sampleRate = buffer.sampleRate;
+      const bitDepth = 16;
+      const format = 1;
+      const samples = buffer.length;
+      const blockAlign = numChannels * bitDepth / 8;
+      const byteRate = sampleRate * blockAlign;
+      const dataSize = samples * blockAlign;
+      const arrayBuffer = new ArrayBuffer(44 + dataSize);
+      const view = new DataView(arrayBuffer);
+      let offset = 0;
+
+      function writeString(str) {
+        for (let i = 0; i < str.length; i++) {
+          view.setUint8(offset++, str.charCodeAt(i));
+        }
+      }
+
+      writeString('RIFF');
+      view.setUint32(offset, 36 + dataSize, true); offset += 4;
+      writeString('WAVE');
+      writeString('fmt ');
+      view.setUint32(offset, 16, true); offset += 4;
+      view.setUint16(offset, format, true); offset += 2;
+      view.setUint16(offset, numChannels, true); offset += 2;
+      view.setUint32(offset, sampleRate, true); offset += 4;
+      view.setUint32(offset, byteRate, true); offset += 4;
+      view.setUint16(offset, blockAlign, true); offset += 2;
+      view.setUint16(offset, bitDepth, true); offset += 2;
+      writeString('data');
+      view.setUint32(offset, dataSize, true); offset += 4;
+
+      const channels = [];
+      for (let channel = 0; channel < numChannels; channel++) {
+        channels.push(buffer.getChannelData(channel));
+      }
+
+      for (let i = 0; i < samples; i++) {
+        for (let channel = 0; channel < numChannels; channel++) {
+          let sample = Math.max(-1, Math.min(1, channels[channel][i]));
+          sample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+          view.setInt16(offset, sample, true);
+          offset += 2;
+        }
+      }
+
+      return new Blob([arrayBuffer], { type: 'audio/wav' });
+    }
+
+    function applyBoost(inputBuffer, gainPercent, ceilingPercent, limiterType) {
+      const gain = gainPercent / 100;
+      const ceiling = Math.max(0.1, Math.min(1, ceilingPercent / 100));
+      const outBuffer = new AudioBuffer({
+        length: inputBuffer.length,
+        numberOfChannels: inputBuffer.numberOfChannels,
+        sampleRate: inputBuffer.sampleRate
+      });
+
+      for (let channel = 0; channel < inputBuffer.numberOfChannels; channel++) {
+        const input = inputBuffer.getChannelData(channel);
+        const output = outBuffer.getChannelData(channel);
+
+        for (let i = 0; i < inputBuffer.length; i++) {
+          let sample = input[i] * gain;
+
+          if (limiterType === 'soft') {
+            sample = Math.tanh(sample / ceiling) * ceiling;
+          } else {
+            sample = Math.max(-ceiling, Math.min(ceiling, sample));
+          }
+
+          output[i] = Math.max(-1, Math.min(1, sample));
+        }
+      }
+
+      return outBuffer;
+    }
+
+    async function boostAudio() {
+      if (!audioBuffer) {
+        setStatus('Upload an audio file first.', 'error');
+        return;
+      }
+
+      try {
+        setStatus('Boosting audio volume...');
+        resetDownload();
+
+        const gainPercent = Number(gainRange.value);
+        const ceilingPercent = Number(ceilingRange.value);
+        const limiterType = limiterMode.value;
+
+        const boostedBuffer = applyBoost(audioBuffer, gainPercent, ceilingPercent, limiterType);
+        const wavBlob = audioBufferToWav(boostedBuffer);
+        const url = URL.createObjectURL(wavBlob);
+        const outputName = (outputNameInput.value || 'boosted-audio').trim();
+
+        downloadLink.href = url;
+        downloadLink.download = `${outputName}.wav`;
+        downloadLink.classList.add('show');
+
+        setStatus('Volume boosted successfully. Your louder WAV file is ready.', 'success');
+      } catch (error) {
+        console.error(error);
+        setStatus('Something went wrong while boosting the audio.', 'error');
+      }
+    }
+
+    browseBtn.addEventListener('click', () => audioFileInput.click());
+
+    audioFileInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (file) loadAudioFile(file);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+      });
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      const file = e.dataTransfer.files?.[0];
+      if (file && file.type.startsWith('audio/')) {
+        loadAudioFile(file);
+      } else {
+        setStatus('Please drop a valid audio file.', 'error');
+      }
+    });
+
+    gainRange.addEventListener('input', updateBoostUI);
+    ceilingRange.addEventListener('input', updateBoostUI);
+
+    previewBtn.addEventListener('click', () => {
+      if (!audioPlayer.src) {
+        setStatus('Upload an audio file first.', 'error');
+        return;
+      }
+      audioPlayer.play();
+      setStatus('Previewing audio...');
+    });
+
+    boostBtn.addEventListener('click', boostAudio);
+
+    resetBtn.addEventListener('click', () => {
+      audioFileInput.value = '';
+      currentFile = null;
+      audioBuffer = null;
+      audioPlayer.pause();
+      audioPlayer.removeAttribute('src');
+      audioPlayer.load();
+      fileName.textContent = 'No file selected';
+      fileMeta.textContent = 'Upload an audio file to start boosting volume.';
+      durationValue.textContent = '00:00';
+      channelValue.textContent = '0';
+      sampleRateValue.textContent = '0 Hz';
+      originalSizeValue.textContent = '0 MB';
+      outputNameInput.value = '';
+      limiterMode.value = 'soft';
+      gainRange.value = '150';
+      ceilingRange.value = '95';
+      updateBoostUI();
+      resetDownload();
+      setStatus('Volume booster reset.');
+    });
+
+    updateBoostUI();
+  </script>
+</body>
+</html>
