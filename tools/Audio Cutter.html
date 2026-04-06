@@ -1,868 +1,605 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Audio Cutter</title>
+  <title>ToolNest - All-in-One Online Tools</title>
   <style>
     :root {
-      --bg-1: #0f172a;
-      --bg-2: #1e293b;
-      --card: rgba(15, 23, 42, 0.72);
-      --line: rgba(255, 255, 255, 0.08);
-      --text: #e2e8f0;
-      --muted: #94a3b8;
-      --accent: #8b5cf6;
-      --accent-2: #22d3ee;
-      --success: #10b981;
-      --danger: #f43f5e;
-      --shadow: 0 20px 60px rgba(2, 6, 23, 0.45);
-      --radius: 24px;
+      --bg: #0f172a;
+      --bg-soft: #111827;
+      --card: rgba(255, 255, 255, 0.08);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --text: #f8fafc;
+      --muted: #cbd5e1;
+      --accent: #38bdf8;
+      --accent-2: #a78bfa;
+      --success: #34d399;
+      --shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+      --radius: 22px;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
-      margin: 0;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--text);
+      font-family: Inter, Arial, sans-serif;
       background:
-        radial-gradient(circle at top left, rgba(139, 92, 246, 0.26), transparent 30%),
-        radial-gradient(circle at top right, rgba(34, 211, 238, 0.2), transparent 26%),
-        linear-gradient(135deg, var(--bg-1), var(--bg-2));
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.22), transparent 28%),
+        radial-gradient(circle at top right, rgba(167, 139, 250, 0.20), transparent 30%),
+        linear-gradient(180deg, #020617 0%, #0f172a 52%, #111827 100%);
+      color: var(--text);
       min-height: 100vh;
-      padding: 32px 16px;
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
     }
 
     .container {
-      max-width: 1100px;
+      width: min(1200px, calc(100% - 32px));
       margin: 0 auto;
     }
 
-    .hero {
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 24px;
-      align-items: stretch;
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(14px);
+      background: rgba(2, 6, 23, 0.68);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    .panel {
-      background: var(--card);
-      backdrop-filter: blur(18px);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 16px 0;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+
+    .logo-badge {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: var(--shadow);
+      font-size: 1.3rem;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .hero {
+      padding: 72px 0 40px;
+    }
+
+    .hero-wrap {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .hero-text h1 {
+      font-size: clamp(2.3rem, 5vw, 4.2rem);
+      line-height: 1.08;
+      margin-bottom: 18px;
+      font-weight: 900;
+    }
+
+    .hero-text p {
+      color: var(--muted);
+      font-size: 1.08rem;
+      max-width: 720px;
+      margin-bottom: 26px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .btn {
+      border: none;
+      cursor: pointer;
+      padding: 14px 20px;
+      border-radius: 14px;
+      font-weight: 700;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      opacity: 0.96;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
       box-shadow: var(--shadow);
     }
 
-    .hero-left {
-      padding: 32px;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: #cbd5e1;
-      font-size: 0.9rem;
-      margin-bottom: 18px;
-    }
-
-    h1 {
-      margin: 0 0 12px;
-      font-size: clamp(2rem, 4vw, 3.6rem);
-      line-height: 1.05;
-      letter-spacing: -0.03em;
-    }
-
-    .subtitle {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.7;
-      max-width: 60ch;
-      font-size: 1rem;
+    .btn-secondary {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.1);
     }
 
     .hero-stats {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 14px;
-      margin-top: 26px;
+      margin-top: 18px;
     }
 
     .stat {
-      padding: 16px;
+      background: var(--card);
+      border: 1px solid var(--card-border);
       border-radius: 18px;
-      background: rgba(255, 255, 255, 0.045);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 16px;
+      backdrop-filter: blur(12px);
     }
 
     .stat strong {
       display: block;
-      font-size: 1.1rem;
-      margin-bottom: 6px;
+      font-size: 1.4rem;
     }
 
     .stat span {
       color: var(--muted);
-      font-size: 0.92rem;
+      font-size: 0.9rem;
     }
 
-    .upload-card {
+    .hero-card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.05));
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 28px;
       padding: 24px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
     }
 
-    .upload-card::before {
-      content: "";
-      position: absolute;
-      inset: auto -40px -40px auto;
-      width: 180px;
-      height: 180px;
-      background: radial-gradient(circle, rgba(34, 211, 238, 0.25), transparent 70%);
-      pointer-events: none;
-    }
-
-    .dropzone {
-      border: 1.5px dashed rgba(255, 255, 255, 0.18);
-      border-radius: 22px;
-      padding: 28px;
-      text-align: center;
-      background: rgba(255, 255, 255, 0.03);
-      transition: 0.25s ease;
-    }
-
-    .dropzone.dragover {
-      border-color: var(--accent-2);
-      background: rgba(34, 211, 238, 0.08);
-      transform: translateY(-2px);
-    }
-
-    .dropzone h3 {
-      margin: 14px 0 8px;
-      font-size: 1.2rem;
-    }
-
-    .dropzone p {
-      color: var(--muted);
-      margin: 0 0 18px;
-    }
-
-    .btn,
-    .btn-secondary,
-    .icon-btn {
-      border: 0;
-      cursor: pointer;
-      transition: transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
-    }
-
-    .btn:hover,
-    .btn-secondary:hover,
-    .icon-btn:hover {
-      transform: translateY(-1px);
-    }
-
-    .btn {
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      color: white;
-      padding: 14px 18px;
-      border-radius: 14px;
-      font-weight: 700;
-      box-shadow: 0 10px 30px rgba(34, 211, 238, 0.2);
-    }
-
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.06);
-      color: var(--text);
-      padding: 13px 18px;
-      border-radius: 14px;
-      font-weight: 600;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .icon-btn {
-      background: rgba(255, 255, 255, 0.06);
-      color: var(--text);
-      width: 46px;
-      height: 46px;
-      border-radius: 14px;
-      display: inline-grid;
-      place-items: center;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      font-size: 1rem;
-    }
-
-    .workspace {
-      margin-top: 26px;
+    .mini-grid {
       display: grid;
-      grid-template-columns: 1.3fr 0.7fr;
-      gap: 24px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-top: 16px;
     }
 
-    .editor,
-    .sidebar {
-      padding: 24px;
+    .mini-card {
+      background: rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
     .section-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 16px;
+      margin: 28px 0 18px;
+      font-size: 1.75rem;
+      font-weight: 800;
     }
 
-    .section-title h2,
-    .section-title h3 {
-      margin: 0;
-      font-size: 1.2rem;
-    }
-
-    .audio-card {
+    .search-panel {
+      margin: 20px 0 30px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
       padding: 18px;
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      margin-bottom: 18px;
-    }
-
-    .file-name {
-      font-weight: 700;
-      word-break: break-word;
-    }
-
-    .file-meta {
-      color: var(--muted);
-      font-size: 0.92rem;
-      margin-top: 6px;
-    }
-
-    .player-row {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-top: 16px;
-    }
-
-    audio {
-      width: 100%;
-      margin-top: 14px;
-      filter: invert(1) hue-rotate(180deg);
-      opacity: 0.92;
-    }
-
-    .wavebox {
-      position: relative;
-      border-radius: 20px;
-      padding: 20px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-      border: 1px solid rgba(255,255,255,0.08);
-      overflow: hidden;
-    }
-
-    .wave {
-      height: 180px;
-      border-radius: 16px;
-      background:
-        linear-gradient(180deg, rgba(34, 211, 238, 0.15), rgba(139, 92, 246, 0.08)),
-        repeating-linear-gradient(
-          90deg,
-          rgba(255,255,255,0.08) 0px,
-          rgba(255,255,255,0.08) 3px,
-          transparent 3px,
-          transparent 9px
-        );
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .wave::after {
-      content: "Move sliders below to choose the exact cut range";
-      color: rgba(255,255,255,0.7);
-      font-size: 0.98rem;
-      letter-spacing: 0.01em;
-    }
-
-    .range-group {
-      margin-top: 20px;
-    }
-
-    .range-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 10px;
-      font-size: 0.95rem;
-      color: var(--muted);
-    }
-
-    .time-values {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin: 14px 0 8px;
-    }
-
-    .time-pill {
-      padding: 10px 12px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      font-size: 0.93rem;
-    }
-
-    input[type="range"] {
-      width: 100%;
-      appearance: none;
-      height: 8px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.14);
-      outline: none;
-      margin: 8px 0;
-    }
-
-    input[type="range"]::-webkit-slider-thumb {
-      appearance: none;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      border: 2px solid white;
-      box-shadow: 0 8px 18px rgba(0,0,0,0.25);
-    }
-
-    .controls-grid {
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 14px;
-      margin-top: 18px;
     }
 
-    .control-box {
-      padding: 16px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.04);
+    .search-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 260px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(2, 6, 23, 0.45);
       border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 14px 16px;
     }
 
-    label {
-      display: block;
-      margin-bottom: 8px;
-      color: var(--muted);
-      font-size: 0.92rem;
-    }
-
-    select,
-    input[type="text"] {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.06);
-      color: var(--text);
-      border: 1px solid rgba(255,255,255,0.08);
+    .search-box input,
+    .filter-select {
+      background: transparent;
+      border: none;
       outline: none;
-    }
-
-    .sidebar-card {
-      padding: 18px;
-      border-radius: 20px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      margin-bottom: 16px;
-    }
-
-    .sidebar-card h4 {
-      margin: 0 0 10px;
+      color: var(--text);
+      width: 100%;
       font-size: 1rem;
     }
 
-    .muted {
-      color: var(--muted);
-      line-height: 1.7;
-      font-size: 0.95rem;
+    .filter-select {
+      background: rgba(2, 6, 23, 0.45);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 14px 16px;
+      min-width: 220px;
     }
 
-    .action-row {
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 18px;
+      margin: 22px 0 36px;
+    }
+
+    .category-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      transition: transform 0.22s ease, border-color 0.22s ease;
+    }
+
+    .category-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(56, 189, 248, 0.5);
+    }
+
+    .category-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .category-head h3 {
+      font-size: 1.1rem;
+    }
+
+    .count {
+      font-size: 0.84rem;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+
+    .tool-list {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 20px;
+      gap: 10px;
     }
 
-    .status {
-      margin-top: 16px;
-      min-height: 24px;
-      color: #cbd5e1;
+    .tool-tag {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 9px 12px;
+      border-radius: 999px;
+      color: #e2e8f0;
+      font-size: 0.92rem;
+      transition: all 0.2s ease;
+    }
+
+    .tool-tag:hover {
+      background: rgba(56, 189, 248, 0.16);
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+
+    .feature-banner {
+      margin: 18px 0 40px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.14), rgba(167, 139, 250, 0.14));
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .feature-item {
+      background: rgba(255,255,255,0.06);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .feature-item strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 1rem;
+    }
+
+    .feature-item span {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .empty-state {
+      display: none;
+      text-align: center;
+      padding: 28px;
+      color: var(--muted);
+      background: rgba(255,255,255,0.05);
+      border-radius: 18px;
+      border: 1px dashed rgba(255,255,255,0.14);
+      margin-bottom: 24px;
+    }
+
+    footer {
+      padding: 36px 0 52px;
+      color: var(--muted);
+      text-align: center;
       font-size: 0.95rem;
     }
 
-    .status.success { color: #6ee7b7; }
-    .status.error { color: #fda4af; }
-
-    .download-link {
-      display: none;
-      margin-top: 12px;
-      text-decoration: none;
-      color: white;
-      background: linear-gradient(135deg, #059669, #10b981);
-      padding: 12px 16px;
-      border-radius: 14px;
-      font-weight: 700;
-      display: inline-block;
-    }
-
-    .download-link.hidden { display: none; }
-    .download-link.show { display: inline-block; }
-
-    .footer-note {
-      margin-top: 18px;
-      color: var(--muted);
-      font-size: 0.88rem;
-      line-height: 1.6;
-    }
-
-    .hidden-input {
-      display: none;
-    }
-
-    @media (max-width: 940px) {
-      .hero,
-      .workspace {
+    @media (max-width: 980px) {
+      .hero-wrap,
+      .feature-banner {
         grid-template-columns: 1fr;
       }
 
-      .hero-stats,
-      .controls-grid {
+      .hero-stats {
         grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .nav {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .nav-links {
+        gap: 10px 14px;
+      }
+
+      .hero {
+        padding-top: 50px;
+      }
+
+      .section-title {
+        font-size: 1.4rem;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <section class="hero">
-      <div class="panel hero-left">
-        <div class="badge">🎵 Browser-based Audio Cutter</div>
-        <h1>Cut audio beautifully, quickly, and right in your browser.</h1>
-        <p class="subtitle">
-          Upload an audio file, choose the start and end time, preview your selection,
-          and export the trimmed clip with a sleek, modern interface.
-        </p>
-
-        <div class="hero-stats">
-          <div class="stat">
-            <strong>No install</strong>
-            <span>Works directly in the browser</span>
-          </div>
-          <div class="stat">
-            <strong>Fast trim</strong>
-            <span>Pick an exact time range</span>
-          </div>
-          <div class="stat">
-            <strong>Modern UI</strong>
-            <span>Clean glassmorphism layout</span>
-          </div>
-        </div>
+  <header>
+    <div class="container nav">
+      <div class="logo">
+        <div class="logo-badge">⚡</div>
+        <span>ToolNest</span>
       </div>
+      <nav class="nav-links">
+        <a href="#tools">Tools</a>
+        <a href="#features">Features</a>
+        <a href="#categories">Categories</a>
+      </nav>
+    </div>
+  </header>
 
-      <div class="panel upload-card">
-        <div class="dropzone" id="dropzone">
-          <div style="font-size: 2.4rem;">🎧</div>
-          <h3>Upload your audio file</h3>
-          <p>Drag & drop MP3, WAV, or other audio files here</p>
-          <button class="btn" id="browseBtn">Choose Audio File</button>
-          <input class="hidden-input" type="file" id="audioFile" accept="audio/*" />
-        </div>
-      </div>
-    </section>
-
-    <section class="workspace">
-      <div class="panel editor">
-        <div class="section-title">
-          <h2>Editor</h2>
-          <div>
-            <button class="icon-btn" id="playSelectionBtn" title="Play selection">▶</button>
-          </div>
-        </div>
-
-        <div class="audio-card">
-          <div class="file-name" id="fileName">No file selected</div>
-          <div class="file-meta" id="fileMeta">Upload an audio file to begin trimming.</div>
-          <audio id="audioPlayer" controls></audio>
-        </div>
-
-        <div class="wavebox">
-          <div class="wave"></div>
-
-          <div class="range-group">
-            <div class="range-head">
-              <span>Start Time</span>
-              <span id="startDisplay">00:00</span>
-            </div>
-            <input type="range" id="startRange" min="0" max="100" step="0.01" value="0" disabled />
-          </div>
-
-          <div class="range-group">
-            <div class="range-head">
-              <span>End Time</span>
-              <span id="endDisplay">00:00</span>
-            </div>
-            <input type="range" id="endRange" min="0" max="100" step="0.01" value="100" disabled />
-          </div>
-
-          <div class="time-values">
-            <div class="time-pill">Start: <strong id="startValue">00:00</strong></div>
-            <div class="time-pill">End: <strong id="endValue">00:00</strong></div>
-            <div class="time-pill">Selected Length: <strong id="selectedLength">00:00</strong></div>
-          </div>
-        </div>
-
-        <div class="controls-grid">
-          <div class="control-box">
-            <label for="outputName">Output file name</label>
-            <input type="text" id="outputName" placeholder="trimmed-audio" />
-          </div>
-          <div class="control-box">
-            <label for="formatSelect">Export format</label>
-            <select id="formatSelect">
-              <option value="wav">WAV</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="action-row">
-          <button class="btn" id="cutBtn">Cut Audio</button>
-          <button class="btn-secondary" id="resetBtn">Reset</button>
-        </div>
-
-        <div class="status" id="status"></div>
-        <a id="downloadLink" class="download-link hidden" download>Download Trimmed Audio</a>
-        <div class="footer-note">
-          This demo trims audio in your browser and exports as WAV. It works best with modern browsers.
-        </div>
-      </div>
-
-      <div class="panel sidebar">
-        <div class="section-title">
-          <h3>Tools & Tips</h3>
-        </div>
-
-        <div class="sidebar-card">
-          <h4>How it works</h4>
-          <p class="muted">
-            1. Upload audio<br />
-            2. Set the start and end range<br />
-            3. Preview the selected part<br />
-            4. Export the cut clip
+  <main>
+    <section class="hero container">
+      <div class="hero-wrap">
+        <div class="hero-text">
+          <h1>All your everyday tools in one clean and simple place.</h1>
+          <p>
+            Search, browse, and access hundreds of useful tools for audio, video, images, PDFs,
+            files, internet, calculators, study needs, and system utilities — all from one attractive landing page.
           </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#tools">Explore Tools</a>
+            <a class="btn btn-secondary" href="#features">See Features</a>
+          </div>
+          <div class="hero-stats">
+            <div class="stat"><strong>150+</strong><span>Useful tools</span></div>
+            <div class="stat"><strong>8</strong><span>Main categories</span></div>
+            <div class="stat"><strong>1</strong><span>Fast search bar</span></div>
+          </div>
         </div>
-
-        <div class="sidebar-card">
-          <h4>Preview selection</h4>
-          <p class="muted">
-            Use the play button to listen only to the selected time range before exporting.
-          </p>
-        </div>
-
-        <div class="sidebar-card">
-          <h4>Best use cases</h4>
-          <p class="muted">
-            Create ringtones, cut podcasts, trim songs, prepare short clips, or remove unwanted sections.
+        <div class="hero-card">
+          <h3>Why users will love it</h3>
+          <div class="mini-grid">
+            <div class="mini-card">🔎 Quick live search</div>
+            <div class="mini-card">📂 Easy category filtering</div>
+            <div class="mini-card">✨ Modern responsive design</div>
+            <div class="mini-card">⚙️ Simple and clean layout</div>
+          </div>
+          <p style="margin-top:16px; color: var(--muted);">
+            Perfect for a tools website, SaaS homepage, utility portal, or online toolbox platform.
           </p>
         </div>
       </div>
     </section>
-  </div>
+
+    <section class="container" id="features">
+      <h2 class="section-title">Important Features</h2>
+      <div class="feature-banner">
+        <div class="feature-item"><strong>Smart Search</strong><span>Instantly find any tool by name.</span></div>
+        <div class="feature-item"><strong>Category Filter</strong><span>Browse tools by audio, video, PDF, and more.</span></div>
+        <div class="feature-item"><strong>Responsive UI</strong><span>Works smoothly on desktop, tablet, and mobile.</span></div>
+        <div class="feature-item"><strong>Easy to Use</strong><span>Simple cards and clean layout for fast navigation.</span></div>
+      </div>
+    </section>
+
+    <section class="container" id="tools">
+      <h2 class="section-title">Find the perfect tool</h2>
+      <div class="search-panel">
+        <div class="search-row">
+          <div class="search-box">
+            <span>🔍</span>
+            <input type="text" id="searchInput" placeholder="Search tools like PDF merger, video cutter, OCR, calculator..." />
+          </div>
+          <select id="categoryFilter" class="filter-select">
+            <option value="all">All Categories</option>
+          </select>
+        </div>
+      </div>
+      <div id="emptyState" class="empty-state">No matching tools found. Try another keyword or category.</div>
+      <div class="category-grid" id="categories"></div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      All tools are clickable. Connect each button to your software pages inside the /tools folder.
+    </div>
+  </footer>
 
   <script>
-    const audioFileInput = document.getElementById('audioFile');
-    const browseBtn = document.getElementById('browseBtn');
-    const dropzone = document.getElementById('dropzone');
-    const audioPlayer = document.getElementById('audioPlayer');
-    const fileName = document.getElementById('fileName');
-    const fileMeta = document.getElementById('fileMeta');
-    const startRange = document.getElementById('startRange');
-    const endRange = document.getElementById('endRange');
-    const startDisplay = document.getElementById('startDisplay');
-    const endDisplay = document.getElementById('endDisplay');
-    const startValue = document.getElementById('startValue');
-    const endValue = document.getElementById('endValue');
-    const selectedLength = document.getElementById('selectedLength');
-    const cutBtn = document.getElementById('cutBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const playSelectionBtn = document.getElementById('playSelectionBtn');
-    const statusEl = document.getElementById('status');
-    const downloadLink = document.getElementById('downloadLink');
-    const outputNameInput = document.getElementById('outputName');
-
-    let audioContext;
-    let audioBuffer = null;
-    let sourceFile = null;
-    let previewTimeout = null;
-
-    function formatTime(seconds) {
-      if (!isFinite(seconds)) return '00:00';
-      const mins = Math.floor(seconds / 60);
-      const secs = Math.floor(seconds % 60);
-      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-    }
-
-    function setStatus(message, type = '') {
-      statusEl.textContent = message;
-      statusEl.className = `status ${type}`.trim();
-    }
-
-    function resetDownload() {
-      downloadLink.classList.remove('show');
-      downloadLink.classList.add('hidden');
-      downloadLink.removeAttribute('href');
-    }
-
-    function updateTimeDisplays() {
-      const start = Number(startRange.value || 0);
-      const end = Number(endRange.value || 0);
-
-      if (end < start) {
-        endRange.value = start;
+    const toolsData = [
+      {
+        name: "🎵 Audio Tools",
+        icon: "🎵",
+        tools: [
+          "Audio cutter","Audio merger","Audio splitter","Audio converter","Audio compressor","Audio volume booster","Audio speed changer","Audio pitch changer","Noise remover","Voice recorder","Ringtone maker","Audio to text","Text to speech","Audio tag editor","Audio joiner","Audio trimmer","Audio equalizer","Audio normalizer","Mic tester","Sound generator"
+        ]
+      },
+      {
+        name: "🎥 Video Tools",
+        icon: "🎥",
+        tools: [
+          "Video cutter","Video merger","Video converter","Video compressor","Video to audio","Audio to video","Video speed changer","Video rotator","Video cropper","Add subtitles to video","Remove audio from video","Screen recorder","Webcam recorder","GIF maker","Video watermark remover","Video watermark adder","Video resizer","Video thumbnail maker","Video stabilizer","Video frame extractor"
+        ]
+      },
+      {
+        name: "🖼️ Image Tools",
+        icon: "🖼️",
+        tools: [
+          "Image to PDF","PDF to image","Image resizer","Image compressor","Image cropper","Image rotator","Image format converter","Background remover","Photo editor","Watermark adder","Watermark remover","Image sharpener","Blur image","Screenshot tool","Image to text (OCR)","Color picker","Meme generator","Collage maker","Photo filter tool","Face blur tool"
+        ]
+      },
+      {
+        name: "📄 PDF Tools",
+        icon: "📄",
+        tools: [
+          "JPG to PDF","PDF to JPG","PDF merger","PDF splitter","PDF compressor","PDF editor","Add page numbers to PDF","Add watermark to PDF","Remove password from PDF","Protect PDF with password","Word to PDF","Excel to PDF","PPT to PDF","PDF to Word","PDF to Excel","PDF to PPT","Rotate PDF","Delete PDF pages","Extract PDF pages","Sign PDF"
+        ]
+      },
+      {
+        name: "📁 File Tools",
+        icon: "📁",
+        tools: [
+          "File converter","File compressor (ZIP)","File extractor (ZIP/RAR)","File renamer","Duplicate file remover","File size reducer","File splitter","File merger","File downloader","ISO extractor","USB bootable maker","File search tool","File organizer","File encryptor","File decryptor"
+        ]
+      },
+      {
+        name: "🌐 Internet Tools",
+        icon: "🌐",
+        tools: [
+          "URL shortener","QR code generator","QR code scanner","Password generator","Password strength checker","Random number generator","Random name picker","Website screenshot tool","Website downloader","Internet speed test","IP address finder","Location finder","Whois domain lookup","Unit converter","Currency converter","Time zone converter","Online notepad","Markdown editor","JSON formatter","HTML viewer"
+        ]
+      },
+      {
+        name: "🔢 Calculator Tools",
+        icon: "🔢",
+        tools: [
+          "Calculator","Age calculator","Percentage calculator","EMI calculator","Loan calculator","GST calculator","Discount calculator","BMI calculator","Date difference calculator","Time duration calculator","Scientific calculator","Binary calculator","GPA calculator","Salary calculator","Profit loss calculator"
+        ]
+      },
+      {
+        name: "🧑‍🎓 Student & Text Tools",
+        icon: "🧑‍🎓",
+        tools: [
+          "Notes maker","To-do list","Text editor","Grammar checker","Paraphrasing tool","Plagiarism checker","Word counter","Character counter","Case converter","Text to handwriting","Handwriting to text","Flashcard maker","Mind map maker","Resume builder","Letter writer","Essay writer","Text summarizer","Speech to text","Translator","Dictionary"
+        ]
+      },
+      {
+        name: "🔐 Security & System Tools",
+        icon: "🔐",
+        tools: [
+          "Password manager","File locker","Folder locker","Image locker","Video locker","Data backup tool","Data recovery tool","Disk cleaner","RAM cleaner","Duplicate photo remover","Antivirus scanner","App lock","System info viewer","Battery health checker","Storage analyzer"
+        ]
       }
+    ];
 
-      const fixedStart = Number(startRange.value || 0);
-      const fixedEnd = Number(endRange.value || 0);
-      startDisplay.textContent = formatTime(fixedStart);
-      endDisplay.textContent = formatTime(fixedEnd);
-      startValue.textContent = formatTime(fixedStart);
-      endValue.textContent = formatTime(fixedEnd);
-      selectedLength.textContent = formatTime(Math.max(0, fixedEnd - fixedStart));
-    }
+    const categoriesContainer = document.getElementById('categories');
+    const searchInput = document.getElementById('searchInput');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const emptyState = document.getElementById('emptyState');
 
-    async function readAudioFile(file) {
-      try {
-        sourceFile = file;
-        resetDownload();
-        setStatus('Loading audio file...');
-
-        if (!audioContext) {
-          audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        }
-
-        const arrayBuffer = await file.arrayBuffer();
-        audioBuffer = await audioContext.decodeAudioData(arrayBuffer.slice(0));
-
-        const objectUrl = URL.createObjectURL(file);
-        audioPlayer.src = objectUrl;
-
-        fileName.textContent = file.name;
-        fileMeta.textContent = `Duration: ${formatTime(audioBuffer.duration)} • Type: ${file.type || 'Unknown audio format'}`;
-        outputNameInput.value = file.name.replace(/\.[^/.]+$/, '') + '-trimmed';
-
-        startRange.disabled = false;
-        endRange.disabled = false;
-        startRange.min = 0;
-        startRange.max = audioBuffer.duration;
-        startRange.step = 0.01;
-        endRange.min = 0;
-        endRange.max = audioBuffer.duration;
-        endRange.step = 0.01;
-        startRange.value = 0;
-        endRange.value = audioBuffer.duration;
-
-        updateTimeDisplays();
-        setStatus('Audio loaded. Adjust the sliders and click “Cut Audio”.', 'success');
-      } catch (error) {
-        console.error(error);
-        setStatus('Could not load this audio file. Please try another file.', 'error');
-      }
-    }
-
-    browseBtn.addEventListener('click', () => audioFileInput.click());
-
-    audioFileInput.addEventListener('change', (e) => {
-      const file = e.target.files?.[0];
-      if (file) readAudioFile(file);
-    });
-
-    ['dragenter', 'dragover'].forEach(eventName => {
-      dropzone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        dropzone.classList.add('dragover');
+    function populateFilter() {
+      toolsData.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.name;
+        option.textContent = category.name;
+        categoryFilter.appendChild(option);
       });
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-      dropzone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        dropzone.classList.remove('dragover');
-      });
-    });
-
-    dropzone.addEventListener('drop', (e) => {
-      const file = e.dataTransfer.files?.[0];
-      if (file && file.type.startsWith('audio/')) {
-        readAudioFile(file);
-      } else {
-        setStatus('Please drop a valid audio file.', 'error');
-      }
-    });
-
-    startRange.addEventListener('input', updateTimeDisplays);
-    endRange.addEventListener('input', updateTimeDisplays);
-
-    playSelectionBtn.addEventListener('click', () => {
-      if (!audioPlayer.src || !audioBuffer) {
-        setStatus('Upload an audio file first.', 'error');
-        return;
-      }
-
-      const start = Number(startRange.value);
-      const end = Number(endRange.value);
-      if (end <= start) {
-        setStatus('End time must be greater than start time.', 'error');
-        return;
-      }
-
-      clearTimeout(previewTimeout);
-      audioPlayer.currentTime = start;
-      audioPlayer.play();
-      previewTimeout = setTimeout(() => {
-        audioPlayer.pause();
-      }, (end - start) * 1000);
-
-      setStatus('Playing selected section...');
-    });
-
-    function audioBufferToWav(buffer) {
-      const numChannels = buffer.numberOfChannels;
-      const sampleRate = buffer.sampleRate;
-      const format = 1;
-      const bitDepth = 16;
-
-      const samples = buffer.length;
-      const blockAlign = numChannels * bitDepth / 8;
-      const byteRate = sampleRate * blockAlign;
-      const dataSize = samples * blockAlign;
-      const bufferSize = 44 + dataSize;
-      const arrayBuffer = new ArrayBuffer(bufferSize);
-      const view = new DataView(arrayBuffer);
-
-      let offset = 0;
-      const writeString = (str) => {
-        for (let i = 0; i < str.length; i++) {
-          view.setUint8(offset++, str.charCodeAt(i));
-        }
-      };
-
-      writeString('RIFF');
-      view.setUint32(offset, 36 + dataSize, true); offset += 4;
-      writeString('WAVE');
-      writeString('fmt ');
-      view.setUint32(offset, 16, true); offset += 4;
-      view.setUint16(offset, format, true); offset += 2;
-      view.setUint16(offset, numChannels, true); offset += 2;
-      view.setUint32(offset, sampleRate, true); offset += 4;
-      view.setUint32(offset, byteRate, true); offset += 4;
-      view.setUint16(offset, blockAlign, true); offset += 2;
-      view.setUint16(offset, bitDepth, true); offset += 2;
-      writeString('data');
-      view.setUint32(offset, dataSize, true); offset += 4;
-
-      const channelData = [];
-      for (let channel = 0; channel < numChannels; channel++) {
-        channelData.push(buffer.getChannelData(channel));
-      }
-
-      for (let i = 0; i < samples; i++) {
-        for (let channel = 0; channel < numChannels; channel++) {
-          let sample = Math.max(-1, Math.min(1, channelData[channel][i]));
-          sample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
-          view.setInt16(offset, sample, true);
-          offset += 2;
-        }
-      }
-
-      return new Blob([arrayBuffer], { type: 'audio/wav' });
     }
 
-    cutBtn.addEventListener('click', async () => {
-      if (!audioBuffer) {
-        setStatus('Upload an audio file before cutting.', 'error');
-        return;
-      }
+    function renderCategories() {
+      const searchValue = searchInput.value.toLowerCase().trim();
+      const selectedCategory = categoryFilter.value;
+      categoriesContainer.innerHTML = '';
 
-      const start = Number(startRange.value);
-      const end = Number(endRange.value);
+      let visibleCards = 0;
 
-      if (end <= start) {
-        setStatus('End time must be greater than start time.', 'error');
-        return;
-      }
+      toolsData.forEach(category => {
+        const categoryMatch = selectedCategory === 'all' || selectedCategory === category.name;
+        if (!categoryMatch) return;
 
-      try {
-        setStatus('Processing trimmed audio...');
-        const sampleRate = audioBuffer.sampleRate;
-        const startSample = Math.floor(start * sampleRate);
-        const endSample = Math.floor(end * sampleRate);
-        const frameCount = endSample - startSample;
+        const filteredTools = category.tools.filter(tool =>
+          tool.toLowerCase().includes(searchValue) || category.name.toLowerCase().includes(searchValue)
+        );
 
-        const trimmedBuffer = new AudioBuffer({
-          length: frameCount,
-          numberOfChannels: audioBuffer.numberOfChannels,
-          sampleRate: sampleRate
-        });
+        if (filteredTools.length === 0 && searchValue) return;
 
-        for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
-          const original = audioBuffer.getChannelData(channel);
-          const trimmed = trimmedBuffer.getChannelData(channel);
-          trimmed.set(original.slice(startSample, endSample));
-        }
+        visibleCards++;
+        const card = document.createElement('div');
+        card.className = 'category-card';
 
-        const wavBlob = audioBufferToWav(trimmedBuffer);
-        const url = URL.createObjectURL(wavBlob);
-        const outputName = (outputNameInput.value || 'trimmed-audio').trim();
+        card.innerHTML = `
+          <div class="category-head">
+            <h3>${category.name}</h3>
+            <span class="count">${filteredTools.length || category.tools.length}</span>
+          </div>
+          <div class="tool-list">
+            ${(filteredTools.length ? filteredTools : category.tools)
+              .map(tool => `<a href="${encodeURIComponent(tool)}.html" class="tool-tag">${tool}</a>`)
+              .join('')}
+          </div>
+        `;
 
-        downloadLink.href = url;
-        downloadLink.download = `${outputName}.wav`;
-        downloadLink.classList.remove('hidden');
-        downloadLink.classList.add('show');
+        categoriesContainer.appendChild(card);
+      });
 
-        setStatus('Audio trimmed successfully. Your download is ready.', 'success');
-      } catch (error) {
-        console.error(error);
-        setStatus('Something went wrong while trimming the audio.', 'error');
-      }
-    });
+      emptyState.style.display = visibleCards === 0 ? 'block' : 'none';
+    }
 
-    resetBtn.addEventListener('click', () => {
-      audioFileInput.value = '';
-      audioPlayer.pause();
-      audioPlayer.removeAttribute('src');
-      audioPlayer.load();
-      audioBuffer = null;
-      sourceFile = null;
-      fileName.textContent = 'No file selected';
-      fileMeta.textContent = 'Upload an audio file to begin trimming.';
-      startRange.value = 0;
-      endRange.value = 100;
-      startRange.disabled = true;
-      endRange.disabled = true;
-      startDisplay.textContent = '00:00';
-      endDisplay.textContent = '00:00';
-      startValue.textContent = '00:00';
-      endValue.textContent = '00:00';
-      selectedLength.textContent = '00:00';
-      outputNameInput.value = '';
-      resetDownload();
-      setStatus('Editor reset. Upload a new file to continue.');
-    });
+    populateFilter();
+    renderCategories();
+
+    searchInput.addEventListener('input', renderCategories);
+    categoryFilter.addEventListener('change', renderCategories);
   </script>
 </body>
 </html>
