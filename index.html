@@ -130,6 +130,7 @@
       border-radius: 14px;
       font-weight: 700;
       transition: transform 0.2s ease, opacity 0.2s ease;
+      display: inline-block;
     }
 
     .btn:hover {
@@ -307,6 +308,7 @@
       color: #e2e8f0;
       font-size: 0.92rem;
       transition: all 0.2s ease;
+      display: inline-block;
     }
 
     .tool-tag:hover {
@@ -444,9 +446,9 @@
       <h2 class="section-title">Important Features</h2>
       <div class="feature-banner">
         <div class="feature-item"><strong>Smart Search</strong><span>Instantly find any tool by name.</span></div>
-        <div class="feature-item"><strong>Category Filter</strong><span>Browse tools by audio, video, PDF, and more.</span></div>
+        <div class="feature-item"><strong>Category Filter</strong><span>Browse tools by category easily.</span></div>
         <div class="feature-item"><strong>Responsive UI</strong><span>Works smoothly on desktop, tablet, and mobile.</span></div>
-        <div class="feature-item"><strong>Easy to Use</strong><span>Simple cards and clean layout for fast navigation.</span></div>
+        <div class="feature-item"><strong>Easy Navigation</strong><span>Each tool opens its own link page.</span></div>
       </div>
     </section>
 
@@ -470,7 +472,7 @@
 
   <footer>
     <div class="container">
-built by srj-source,you can donate me a coffee
+      built by srj-source,you can donate me a coffee
     </div>
   </footer>
 
@@ -480,63 +482,108 @@ built by srj-source,you can donate me a coffee
         name: "🎵 Audio Tools",
         icon: "🎵",
         tools: [
-          "Audio cutter","Audio merger","Audio splitter","Audio converter","Audio compressor","Audio volume booster","Audio speed changer","Audio pitch changer","Noise remover","Voice recorder","Ringtone maker","Audio to text","Text to speech","Audio tag editor","Audio joiner","Audio trimmer","Audio equalizer","Audio normalizer","Mic tester","Sound generator"
+          { name: "Audio cutter", link: "tools/audio-cutter.html" },
+          { name: "Audio merger", link: "tools/audio-merger.html" },
+          { name: "Audio splitter", link: "tools/audio-splitter.html" },
+          { name: "Audio converter", link: "tools/audio-converter.html" },
+          { name: "Audio compressor", link: "tools/audio-compressor.html" },
+          { name: "Audio volume booster", link: "tools/audio-volume-booster.html" }
         ]
       },
       {
         name: "🎥 Video Tools",
         icon: "🎥",
         tools: [
-          "Video cutter","Video merger","Video converter","Video compressor","Video to audio","Audio to video","Video speed changer","Video rotator","Video cropper","Add subtitles to video","Remove audio from video","Screen recorder","Webcam recorder","GIF maker","Video watermark remover","Video watermark adder","Video resizer","Video thumbnail maker","Video stabilizer","Video frame extractor"
+          { name: "Video cutter", link: "tools/video-cutter.html" },
+          { name: "Video merger", link: "tools/video-merger.html" },
+          { name: "Video converter", link: "tools/video-converter.html" },
+          { name: "Video compressor", link: "tools/video-compressor.html" },
+          { name: "GIF maker", link: "tools/gif-maker.html" },
+          { name: "Video cropper", link: "tools/video-cropper.html" }
         ]
       },
       {
         name: "🖼️ Image Tools",
         icon: "🖼️",
         tools: [
-          "Image to PDF","PDF to image","Image resizer","Image compressor","Image cropper","Image rotator","Image format converter","Background remover","Photo editor","Watermark adder","Watermark remover","Image sharpener","Blur image","Screenshot tool","Image to text (OCR)","Color picker","Meme generator","Collage maker","Photo filter tool","Face blur tool"
+          { name: "Image to PDF", link: "tools/image-to-pdf.html" },
+          { name: "PDF to image", link: "tools/pdf-to-image.html" },
+          { name: "Image resizer", link: "tools/image-resizer.html" },
+          { name: "Image compressor", link: "tools/image-compressor.html" },
+          { name: "Background remover", link: "tools/background-remover.html" },
+          { name: "Image to text (OCR)", link: "tools/image-to-text-ocr.html" }
         ]
       },
       {
         name: "📄 PDF Tools",
         icon: "📄",
         tools: [
-          "JPG to PDF","PDF to JPG","PDF merger","PDF splitter","PDF compressor","PDF editor","Add page numbers to PDF","Add watermark to PDF","Remove password from PDF","Protect PDF with password","Word to PDF","Excel to PDF","PPT to PDF","PDF to Word","PDF to Excel","PDF to PPT","Rotate PDF","Delete PDF pages","Extract PDF pages","Sign PDF"
+          { name: "JPG to PDF", link: "tools/jpg-to-pdf.html" },
+          { name: "PDF to JPG", link: "tools/pdf-to-jpg.html" },
+          { name: "PDF merger", link: "tools/pdf-merger.html" },
+          { name: "PDF splitter", link: "tools/pdf-splitter.html" },
+          { name: "PDF compressor", link: "tools/pdf-compressor.html" },
+          { name: "PDF editor", link: "tools/pdf-editor.html" }
         ]
       },
       {
         name: "📁 File Tools",
         icon: "📁",
         tools: [
-          "File converter","File compressor (ZIP)","File extractor (ZIP/RAR)","File renamer","Duplicate file remover","File size reducer","File splitter","File merger","File downloader","ISO extractor","USB bootable maker","File search tool","File organizer","File encryptor","File decryptor"
+          { name: "File converter", link: "tools/file-converter.html" },
+          { name: "File compressor (ZIP)", link: "tools/file-compressor.html" },
+          { name: "File extractor (ZIP/RAR)", link: "tools/file-extractor.html" },
+          { name: "File splitter", link: "tools/file-splitter.html" },
+          { name: "File merger", link: "tools/file-merger.html" },
+          { name: "File organizer", link: "tools/file-organizer.html" }
         ]
       },
       {
         name: "🌐 Internet Tools",
         icon: "🌐",
         tools: [
-          "URL shortener","QR code generator","QR code scanner","Password generator","Password strength checker","Random number generator","Random name picker","Website screenshot tool","Website downloader","Internet speed test","IP address finder","Location finder","Whois domain lookup","Unit converter","Currency converter","Time zone converter","Online notepad","Markdown editor","JSON formatter","HTML viewer"
+          { name: "URL shortener", link: "tools/url-shortener.html" },
+          { name: "QR code generator", link: "tools/qr-code-generator.html" },
+          { name: "Password generator", link: "tools/password-generator.html" },
+          { name: "Website screenshot tool", link: "tools/website-screenshot-tool.html" },
+          { name: "Currency converter", link: "tools/currency-converter.html" },
+          { name: "HTML viewer", link: "tools/html-viewer.html" }
         ]
       },
       {
         name: "🔢 Calculator Tools",
         icon: "🔢",
         tools: [
-          "Calculator","Age calculator","Percentage calculator","EMI calculator","Loan calculator","GST calculator","Discount calculator","BMI calculator","Date difference calculator","Time duration calculator","Scientific calculator","Binary calculator","GPA calculator","Salary calculator","Profit loss calculator"
+          { name: "Calculator", link: "tools/calculator.html" },
+          { name: "Age calculator", link: "tools/age-calculator.html" },
+          { name: "Percentage calculator", link: "tools/percentage-calculator.html" },
+          { name: "Loan calculator", link: "tools/loan-calculator.html" },
+          { name: "BMI calculator", link: "tools/bmi-calculator.html" },
+          { name: "Scientific calculator", link: "tools/scientific-calculator.html" }
         ]
       },
       {
         name: "🧑‍🎓 Student & Text Tools",
         icon: "🧑‍🎓",
         tools: [
-          "Notes maker","To-do list","Text editor","Grammar checker","Paraphrasing tool","Plagiarism checker","Word counter","Character counter","Case converter","Text to handwriting","Handwriting to text","Flashcard maker","Mind map maker","Resume builder","Letter writer","Essay writer","Text summarizer","Speech to text","Translator","Dictionary"
+          { name: "Notes maker", link: "tools/notes-maker.html" },
+          { name: "Text editor", link: "tools/text-editor.html" },
+          { name: "Grammar checker", link: "tools/grammar-checker.html" },
+          { name: "Word counter", link: "tools/word-counter.html" },
+          { name: "Translator", link: "tools/translator.html" },
+          { name: "Dictionary", link: "tools/dictionary.html" }
         ]
       },
       {
         name: "🔐 Security & System Tools",
         icon: "🔐",
         tools: [
-          "Password manager","File locker","Folder locker","Image locker","Video locker","Data backup tool","Data recovery tool","Disk cleaner","RAM cleaner","Duplicate photo remover","Antivirus scanner","App lock","System info viewer","Battery health checker","Storage analyzer"
+          { name: "Password manager", link: "tools/password-manager.html" },
+          { name: "File locker", link: "tools/file-locker.html" },
+          { name: "Data backup tool", link: "tools/data-backup-tool.html" },
+          { name: "Disk cleaner", link: "tools/disk-cleaner.html" },
+          { name: "System info viewer", link: "tools/system-info-viewer.html" },
+          { name: "Storage analyzer", link: "tools/storage-analyzer.html" }
         ]
       }
     ];
@@ -567,23 +614,27 @@ built by srj-source,you can donate me a coffee
         if (!categoryMatch) return;
 
         const filteredTools = category.tools.filter(tool =>
-          tool.toLowerCase().includes(searchValue) || category.name.toLowerCase().includes(searchValue)
+          tool.name.toLowerCase().includes(searchValue) ||
+          category.name.toLowerCase().includes(searchValue)
         );
 
         if (filteredTools.length === 0 && searchValue) return;
 
         visibleCards++;
+
         const card = document.createElement('div');
         card.className = 'category-card';
+
+        const toolsToShow = filteredTools.length ? filteredTools : category.tools;
 
         card.innerHTML = `
           <div class="category-head">
             <h3>${category.name}</h3>
-            <span class="count">${filteredTools.length || category.tools.length}</span>
+            <span class="count">${toolsToShow.length}</span>
           </div>
           <div class="tool-list">
-            ${(filteredTools.length ? filteredTools : category.tools)
-              .map(tool => `<a href="#" class="tool-tag">${tool}</a>`)
+            ${toolsToShow
+              .map(tool => `<a href="${tool.link}" class="tool-tag">${tool.name}</a>`)
               .join('')}
           </div>
         `;
