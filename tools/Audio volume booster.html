@@ -493,7 +493,7 @@
             </div>
             <div>
               <label for="limiterMode">Limiter mode</label>
-              <select style="background-color:blue"id="limiterMode">
+              <select style="background-color:blue" id="limiterMode">
                 <option value="soft">Soft limiter</option>
                 <option value="hard">Hard limiter</option>
               </select>
@@ -549,6 +549,7 @@
           </p>
         </div>
 
+      
       </div>
     </section>
   </div>
@@ -559,7 +560,6 @@
     href="https://srj-source.github.io/coffee.html">built by srj-source,you can donate me a coffee</a>
     </div>
   </footer>
-
   <script>
     const audioFileInput = document.getElementById('audioFile');
     const browseBtn = document.getElementById('browseBtn');
@@ -587,6 +587,8 @@
     let audioContext;
     let audioBuffer = null;
     let currentFile = null;
+    let previewSource = null;
+    let previewGain = null;
 
     function formatTime(seconds) {
       if (!isFinite(seconds)) return '00:00';
@@ -713,12 +715,12 @@
           let sample = input[i] * gain;
 
           if (limiterType === 'soft') {
-            sample = Math.tanh(sample / ceiling) * ceiling;
+            sample = Math.tanh(sample) * ceiling;
           } else {
             sample = Math.max(-ceiling, Math.min(ceiling, sample));
           }
 
-          output[i] = Math.max(-1, Math.min(1, sample));
+          output[i] = sample;
         }
       }
 
@@ -748,7 +750,7 @@
         downloadLink.download = `${outputName}.wav`;
         downloadLink.classList.add('show');
 
-        setStatus('Volume boosted successfully. Your louder WAV file is ready.', 'success');
+        setStatus('Volume boosted successfully. (Now actually amplified)', 'success');
       } catch (error) {
         console.error(error);
         setStatus('Something went wrong while boosting the audio.', 'error');
@@ -788,13 +790,39 @@
     gainRange.addEventListener('input', updateBoostUI);
     ceilingRange.addEventListener('input', updateBoostUI);
 
-    previewBtn.addEventListener('click', () => {
-      if (!audioPlayer.src) {
+    previewBtn.addEventListener('click', async () => {
+      if (!audioBuffer) {
         setStatus('Upload an audio file first.', 'error');
         return;
       }
-      audioPlayer.play();
-      setStatus('Previewing audio...');
+
+      try {
+        const context = await ensureAudioContext();
+
+        if (previewSource) {
+          previewSource.stop();
+        }
+
+        const gainPercent = Number(gainRange.value);
+        const ceilingPercent = Number(ceilingRange.value);
+        const limiterType = limiterMode.value;
+
+        const boostedBuffer = applyBoost(audioBuffer, gainPercent, ceilingPercent, limiterType);
+
+        previewSource = context.createBufferSource();
+        previewSource.buffer = boostedBuffer;
+
+        previewGain = context.createGain();
+        previewGain.gain.value = 1;
+
+        previewSource.connect(previewGain).connect(context.destination);
+        previewSource.start();
+
+        setStatus('Previewing boosted audio...', 'success');
+      } catch (err) {
+        console.error(err);
+        setStatus('Preview failed.', 'error');
+      }
     });
 
     boostBtn.addEventListener('click', boostAudio);
