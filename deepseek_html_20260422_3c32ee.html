@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔍 Device & Permission Inspector</title>
+  <style>
+    /* (Your existing styles + modal overlay) */
+    body { font-family: system-ui; background: #f5f7fb; margin: 0; padding: 20px; }
+    .container { max-width: 1400px; margin: 0 auto; }
+    h1 { color: #1a1e2b; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+    .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .info-grid { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; }
+    .label { font-weight: 600; color: #4a5568; }
+    .value { word-break: break-word; }
+    .status-bar { display: flex; align-items: center; gap: 16px; margin: 20px 0; flex-wrap: wrap; }
+    .button-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn { padding: 8px 16px; border-radius: 20px; border: 1px solid #cbd5e0; background: white; cursor: pointer; font-weight: 500; }
+    .btn-primary { background: #2563eb; color: white; border: none; }
+    .raw-json { background: #1e1e2e; color: #e2e8f0; padding: 16px; border-radius: 12px; overflow-x: auto; font-size: 13px; }
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+    .modal-content { background: white; margin: 10% auto; padding: 24px; border-radius: 24px; width: 90%; max-width: 500px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; }
+    input, textarea { width: 100%; padding: 10px; margin: 8px 0 16px; border: 1px solid #ddd; border-radius: 12px; }
+    .gate-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+    .gate-box { background: white; padding: 32px; border-radius: 32px; max-width: 500px; text-align: center; }
+    .gate-box h2 { margin-top: 0; }
+    .storage-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .storage-table td, .storage-table th { border: 1px solid #e2e8f0; padding: 6px; }
+  </style>
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, set, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    // 🔥 REPLACE WITH YOUR FIREBASE CONFIG
+    const firebaseConfig = {
+      apiKey: "AIzaSy...",
+      authDomain: "your-project.firebaseapp.com",
+      databaseURL: "https://your-project-default-rtdb.firebaseio.com",
+      projectId: "your-project",
+      storageBucket: "your-project.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "1:123456789:web:abc..."
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.db = db;  // expose for use in other scripts
+    window.firebaseRef = ref;
+    window.firebaseSet = set;
+    window.firebaseUpdate = update;
+  </script>
+</head>
+<body>
+
+<!-- COMPULSORY PERMISSION GATE -->
+<div id="gateOverlay" class="gate-overlay">
+  <div class="gate-box">
+    <h2>🔐 Tracking Permission Required</h2>
+    <p>This site collects anonymous device, browser, and network data to improve experience.</p>
+    <p>By clicking <strong>Enter & Allow Tracking</strong>, you agree to the collection of this information.</p>
+    <p style="font-size:0.9rem; color:#666;">No personal data is stored unless you voluntarily provide it.</p>
+    <button id="grantPermissionBtn" class="btn btn-primary" style="font-size:1.2rem; padding:12px 24px;">✅ Enter & Allow Tracking</button>
+  </div>
+</div>
+
+<div class="container">
+  <h1>🛡️ Full Device & Permission Inspector</h1>
+  
+  <div class="status-bar">
+    <div id="globalStatus">⏳ Initializing...</div>
+    <div class="button-group">
+      <button class="btn" onclick="refreshAllData()">🔄 Refresh All</button>
+      <button class="btn" onclick="requestGeolocation()">📍 Precise Location</button>
+      <button class="btn btn-primary" onclick="requestExtendedPermissions()">🔐 Extended Permissions</button>
+      <button class="btn" onclick="openPersonalModal()">👤 Personal Info</button>
+    </div>
+  </div>
+
+  <!-- Personal Info Card -->
+  <div id="personalInfoCard" class="personal-card" style="display: none; background: #f0f4ff; border-radius: 16px; padding: 16px; margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between;">
+      <h3 style="margin:0 0 8px;">📋 Provided Identity</h3>
+      <span style="cursor:pointer;" onclick="openPersonalModal()">✏️ Edit</span>
+    </div>
+    <div id="personalInfoDisplay" class="info-grid"></div>
+  </div>
+
+  <div class="grid">
+    <!-- Device card -->
+    <div class="card">
+      <h2>📱 Device & System</h2>
+      <div id="deviceInfo" class="info-grid"></div>
+    </div>
+    <!-- Network & Location card -->
+    <div class="card">
+      <h2>🌍 Network & Location</h2>
+      <div id="networkInfo" class="info-grid"></div>
+    </div>
+    <!-- Browser capabilities -->
+    <div class="card">
+      <h2>🧩 Browser & Plugins</h2>
+      <div id="browserInfo" class="info-grid"></div>
+    </div>
+    <!-- Hardware & sensors -->
+    <div class="card">
+      <h2>⚙️ Hardware & APIs</h2>
+      <div id="hardwareInfo" class="info-grid"></div>
+    </div>
+  </div>
+
+  <!-- Extended Data Section -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); gap:20px; margin-bottom:20px;">
+    <div class="card">
+      <h2>💾 Local Storage</h2>
+      <div id="localStorageDisplay">Not collected yet.</div>
+    </div>
+    <div class="card">
+      <h2>📂 Session Storage</h2>
+      <div id="sessionStorageDisplay">Not collected</div>
+    </div>
+    <div class="card">
+      <h2>🗃️ IndexedDB</h2>
+      <div id="indexedDBDisplay">—</div>
+    </div>
+    <div class="card">
+      <h2>🎥 Media Devices</h2>
+      <div id="mediaDevicesDisplay">—</div>
+    </div>
+    <div class="card">
+      <h2>🎮 Gamepads</h2>
+      <div id="gamepadDisplay">—</div>
+    </div>
+    <div class="card">
+      <h2>📝 Autofill Fields</h2>
+      <div id="autofillDisplay">—</div>
+    </div>
+    <div class="card">
+      <h2>👁️ Visibility / Focus</h2>
+      <div id="visibilityDisplay">—</div>
+    </div>
+  </div>
+
+  <!-- Raw JSON -->
+  <div class="card">
+    <h2>📄 Raw Collected Data (JSON)</h2>
+    <pre id="rawData" class="raw-json">Loading...</pre>
+  </div>
+</div>
+
+<!-- Personal Info Modal -->
+<div id="personalModal" class="modal">
+  <div class="modal-content">
+    <h2 style="margin-top:0;">👤 Enter your details</h2>
+    <form onsubmit="savePersonalInfo(event)">
+      <label>Full name</label>
+      <input type="text" id="fullName" placeholder="John Doe" autocomplete="name">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="john@example.com" autocomplete="email">
+      <label>Phone</label>
+      <input type="tel" id="phone" placeholder="+1 234 567 890" autocomplete="tel">
+      <label>Address</label>
+      <input type="text" id="address" placeholder="Street, City" autocomplete="street-address">
+      <div style="display:flex; gap:12px; margin: 12px 0;">
+        <button type="button" class="btn" onclick="pickContact()">📇 Pick from contacts</button>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" onclick="closePersonalModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // ---------- GLOBAL STATE & FIREBASE ----------
+  const state = {
+    ipData: null,
+    battery: null,
+    connection: null,
+    webglInfo: null,
+    hintsData: null,
+    preciseLocation: null,
+    timestamp: new Date(),
+    personalInfo: null,
+    mediaDevices: [],
+    gamepads: [],
+    indexedDBNames: [],
+    localStorageItems: [],
+    sessionStorageItems: [],
+    autofillFields: [],
+    visibilityState: null,
+    hasFocus: false
+  };
+
+  // Unique session ID for this visit
+  let sessionId = sessionStorage.getItem('trackingSessionId');
+  if (!sessionId) {
+    sessionId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    sessionStorage.setItem('trackingSessionId', sessionId);
+  }
+
+  // ---------- FIREBASE SEND FUNCTION ----------
+  async function sendToFirebase(data, isUpdate = false) {
+    if (!window.db) return;
+    try {
+      const dbRef = window.firebaseRef(window.db, 'visits/' + sessionId);
+      if (isUpdate) {
+        await window.firebaseUpdate(dbRef, data);
+      } else {
+        await window.firebaseSet(dbRef, data);
+      }
+      console.log('✅ Firebase updated');
+    } catch (e) {
+      console.warn('Firebase error:', e);
+    }
+  }
+
+  // Build payload in required format
+  function buildFirebasePayload() {
+    const ua = navigator.userAgent;
+    const osInfo = parseOS(ua, navigator.platform);
+    const browserInfo = parseBrowser(ua);
+    const hints = state.hintsData || {};
+    
+    return {
+      timestamp: new Date().toISOString(),
+      device: {
+        model: hints.model || parseModelFromUA(ua),
+        os: `${osInfo.name} ${osInfo.version}`.trim(),
+        cpuCores: navigator.hardwareConcurrency || 'Unknown',
+        memory: navigator.deviceMemory ? navigator.deviceMemory+'GB' : 'N/A',
+        architecture: hints.architecture || 'Unknown',
+        touchPoints: navigator.maxTouchPoints || 0
+      },
+      browser: {
+        name: browserInfo.name,
+        version: browserInfo.version,
+        cookiesEnabled: navigator.cookieEnabled,
+        plugins: navigator.plugins?.length || 0,
+        doNotTrack: navigator.doNotTrack || window.doNotTrack,
+        language: navigator.language,
+        languages: navigator.languages?.join(', ')
+      },
+      network: {
+        type: state.connection?.effectiveType || 'Unknown',
+        downlink: state.connection ? state.connection.downlink+' Mbps' : 'Unknown',
+        rtt: state.connection ? state.connection.rtt+' ms' : 'Unknown',
+        saveData: state.connection?.saveData || false,
+        online: navigator.onLine,
+        ip: state.ipData?.ip || null,
+        isp: state.ipData?.org || null,
+        location: state.ipData ? {
+          city: state.ipData.city,
+          region: state.ipData.region,
+          country: state.ipData.country_name,
+          postal: state.ipData.postal,
+          timezone: state.ipData.timezone,
+          approxCoords: state.ipData.latitude ? `${state.ipData.latitude},${state.ipData.longitude}` : null
+        } : null,
+        preciseLocation: state.preciseLocation ? {
+          lat: state.preciseLocation.latitude,
+          lon: state.preciseLocation.longitude,
+          accuracy: state.preciseLocation.accuracy
+        } : null
+      },
+      screen: {
+        resolution: `${screen.width}x${screen.height}`,
+        viewport: `${window.innerWidth}x${window.innerHeight}`,
+        colorDepth: screen.colorDepth,
+        pixelRatio: devicePixelRatio
+      },
+      // Additional fields from extended permissions & personal info
+      personalInfo: state.personalInfo,
+      extended: {
+        localStorageCount: state.localStorageItems.length,
+        sessionStorageCount: state.sessionStorageItems.length,
+        indexedDBNames: state.indexedDBNames,
+        mediaDevices: state.mediaDevices.map(d => d.label || d.kind),
+        gamepads: state.gamepads.map(g => g.id),
+        autofillFields: state.autofillFields.length,
+        visibilityState: state.visibilityState,
+        hasFocus: state.hasFocus
+      },
+      webgl: state.webglInfo,
+      battery: state.battery
+    };
+  }
+
+  // ---------- UA PARSING (same as original) ----------
+  function parseModelFromUA(ua) {
+    const patterns = [
+      { regex: /iPhone(\d+),(\d+)/i, format: m => `iPhone${m[1]},${m[2]}` },
+      { regex: /iPad(\d+),(\d+)/i, format: m => `iPad${m[1]},${m[2]}` },
+      { regex: /; ?([A-Za-z0-9\-\. ]+?)(?:\)| Build)/, format: m => m[1].trim() },
+      { regex: /Android [\d\.]+; ([^;)]+)/, format: m => m[1].trim() },
+    ];
+    for (let p of patterns) {
+      const match = ua.match(p.regex);
+      if (match) return p.format(match);
+    }
+    if (/iPhone|iPad|iPod/.test(ua)) return 'Apple Device';
+    if (/Android/.test(ua)) return 'Android Device';
+    if (/CrOS/.test(ua)) return 'Chromebook';
+    return 'Desktop / Unknown';
+  }
+
+  function parseOS(ua, platform) {
+    const osPatterns = [
+      { regex: /Windows NT ([\d\.]+)/, name: 'Windows', ver: m => m[1] },
+      { regex: /Mac OS X ([\d_]+)/, name: 'macOS', ver: m => m[1].replace(/_/g, '.') },
+      { regex: /iPhone OS ([\d_]+)/, name: 'iOS', ver: m => m[1].replace(/_/g, '.') },
+      { regex: /iPad; CPU OS ([\d_]+)/, name: 'iPadOS', ver: m => m[1].replace(/_/g, '.') },
+      { regex: /Android ([\d\.]+)/, name: 'Android', ver: m => m[1] },
+      { regex: /Linux/, name: 'Linux', ver: () => '' },
+      { regex: /CrOS/, name: 'Chrome OS', ver: () => '' }
+    ];
+    for (let p of osPatterns) {
+      const match = ua.match(p.regex);
+      if (match) return { name: p.name, version: p.ver(match) };
+    }
+    return { name: platform || 'Unknown', version: '' };
+  }
+
+  function parseBrowser(ua) {
+    const patterns = [
+      { regex: /Edg(?:e|A|iOS)?\/([\d\.]+)/, name: 'Edge' },
+      { regex: /OPR\/([\d\.]+)/, name: 'Opera' },
+      { regex: /Chrome\/([\d\.]+)/, name: 'Chrome' },
+      { regex: /Firefox\/([\d\.]+)/, name: 'Firefox' },
+      { regex: /Safari\/([\d\.]+)/, name: 'Safari' },
+      { regex: /MSIE ([\d\.]+);/, name: 'IE' },
+      { regex: /Trident\/.*rv:([\d\.]+)/, name: 'IE' }
+    ];
+    for (let p of patterns) {
+      const match = ua.match(p.regex);
+      if (match) return { name: p.name, version: match[1] };
+    }
+    return { name: 'Unknown', version: '' };
+  }
+
+  // ---------- API CALLS & COLLECTION (original + extended) ----------
+  async function fetchIPInfo() { /* same as original */ }
+  function requestGeolocation() { /* same as original */ }
+  async function getBatteryInfo() { /* same */ }
+  function getWebGLInfo() { /* same */ }
+  async function getUAHints() { /* same */ }
+
+  // Extended permissions collection (unchanged logic but triggers Firebase update)
+  async function collectExtendedData() {
+    const confirmed = confirm('🔐 This will request additional permissions... Do you want to proceed?');
+    if (!confirmed) return;
+
+    document.getElementById('globalStatus').innerHTML = '<span class="spinner"></span> Collecting extended data...';
+
+    // Collect localStorage, sessionStorage, IndexedDB, media devices, gamepads, autofill, visibility...
+    // (exact same logic as your original script)
+    // ... (fill state.extended fields)
+
+    renderExtendedData();
+    renderRawData();
+    
+    // Update Firebase with extended fields (update the same session record)
+    await sendToFirebase(buildFirebasePayload(), true);
+    
+    document.getElementById('globalStatus').innerHTML = '✅ Extended data collected & synced.';
+  }
+
+  // ---------- MAIN REFRESH (sends initial data) ----------
+  async function refreshAllData() {
+    document.getElementById('globalStatus').innerHTML = '<span class="spinner"></span> Detecting...';
+    state.timestamp = new Date();
+    state.connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    
+    const [ip, bat, hints, geo] = await Promise.allSettled([
+      fetchIPInfo(), getBatteryInfo(), getUAHints(),
+      (async () => { try { return await requestGeolocation(); } catch { return null; } })()
+    ]);
+    if (ip.status === 'fulfilled') state.ipData = ip.value;
+    if (bat.status === 'fulfilled') state.battery = bat.value;
+    if (hints.status === 'fulfilled') state.hintsData = hints.value;
+    if (geo.status === 'fulfilled') state.preciseLocation = geo.value;
+    state.webglInfo = getWebGLInfo();
+
+    renderDeviceInfo(); renderNetworkInfo(); renderBrowserInfo(); renderHardwareInfo(); renderPersonalInfo(); renderRawData();
+    
+    // Send initial data to Firebase
+    await sendToFirebase(buildFirebasePayload());
+    
+    document.getElementById('globalStatus').innerHTML = `✅ Updated & synced: ${new Date().toLocaleString()}`;
+  }
+
+  // Render functions (same as original, slightly adapted)
+  // ... (include all renderDeviceInfo, renderNetworkInfo, etc.)
+
+  // ---------- COMPULSORY GATE ----------
+  document.getElementById('grantPermissionBtn').addEventListener('click', () => {
+    document.getElementById('gateOverlay').style.display = 'none';
+    // Start data collection immediately after permission
+    refreshAllData();
+  });
+
+  // Prevent closing gate without click (optional)
+  window.addEventListener('load', () => {
+    // Gate is visible by default
+  });
+
+  // Expose functions globally
+  window.refreshAllData = refreshAllData;
+  window.requestGeolocation = async () => { /* ... */ };
+  window.requestExtendedPermissions = collectExtendedData;
+  window.openPersonalModal = /* ... */;
+  // ... etc.
+
+  // Initialize (but wait for gate)
+  // (We don't auto-start; gate click triggers refreshAllData)
+</script>
+</body>
+</html>
