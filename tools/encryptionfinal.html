@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>srj-src - 7 Layer Encryption</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --accent: #38bdf8;
+            --text: #e2e8f0;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+            color: var(--accent);
+        }
+        .subtitle {
+            text-align: center;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+        .section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 1rem;
+        }
+        .section h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+        input[type="text"],
+        input[type="file"] {
+            flex: 1 1 200px;
+            padding: 0.8rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: #e2e8f0;
+            font-size: 1rem;
+        }
+        button {
+            padding: 0.8rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            background: var(--accent);
+            color: #0f172a;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        button:hover {
+            filter: brightness(1.1);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .key-preview {
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .key-preview img {
+            border: 2px solid var(--accent);
+            border-radius: 0.5rem;
+            max-width: 200px;
+        }
+        .progress-container {
+            margin-top: 1.5rem;
+        }
+        .progress-bar {
+            height: 8px;
+            background: #334155;
+            border-radius: 4px;
+            overflow: hidden;
+            width: 100%;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--accent);
+            transition: width 0.2s;
+        }
+        .progress-text {
+            margin-top: 0.3rem;
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+        .error {
+            color: #f87171;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #334155;
+            margin: 2rem 0 1rem;
+        }
+        .decoy-note {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: #fbbf24;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🔐 srj-src</h1>
+    <p class="subtitle">7‑Layer Memory‑Based Encryption</p>
+
+    <!-- Encryption Section -->
+    <div class="section">
+        <h2>🔒 Encrypt Folder</h2>
+        <div class="row">
+            <input type="file" id="folderInput" webkitdirectory directory multiple title="Select a folder">
+            <input type="text" id="phraseInputEnc" placeholder="Memorable phrase (e.g. earth is round)">
+        </div>
+        <button id="encryptBtn">Start Encryption</button>
+        <div class="key-preview" id="keyPreviewEnc" style="display: none;">
+            <p>Your key image (save it):</p>
+            <img id="keyImageEnc" alt="Key">
+            <button id="downloadKeyBtn">⬇️ Download Key Image</button>
+        </div>
+        <div class="progress-container" id="encProgressContainer" style="display: none;">
+            <div class="progress-bar"><div class="progress-fill" id="encProgressFill"></div></div>
+            <div class="progress-text" id="encProgressText"></div>
+        </div>
+        <div class="error" id="encError"></div>
+    </div>
+
+    <hr>
+
+    <!-- Decryption Section -->
+    <div class="section">
+        <h2>🔓 Decrypt .srjsrc File</h2>
+        <div class="row">
+            <input type="file" id="srjsrcFileInput" accept=".srjsrc">
+            <input type="text" id="phraseInputDec" placeholder="Enter memorable phrase">
+            <span style="align-self:center;">OR</span>
+            <input type="file" id="keyImageInput" accept="image/*" title="Upload key image">
+        </div>
+        <button id="decryptBtn">Start Decryption</button>
+        <div class="progress-container" id="decProgressContainer" style="display: none;">
+            <div class="progress-bar"><div class="progress-fill" id="decProgressFill"></div></div>
+            <div class="progress-text" id="decProgressText"></div>
+        </div>
+        <div class="error" id="decError"></div>
+        <div class="decoy-note" id="decoyNote" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Hidden canvas for key generation -->
+<canvas id="hiddenCanvas" width="200" height="200" style="display: none;"></canvas>
+
+<script>
+    (function() {
+        // ---------- DOM refs ----------
+        const folderInput = document.getElementById('folderInput');
+        const phraseEnc = document.getElementById('phraseInputEnc');
+        const encryptBtn = document.getElementById('encryptBtn');
+        const keyPreviewEnc = document.getElementById('keyPreviewEnc');
+        const keyImageEnc = document.getElementById('keyImageEnc');
+        const downloadKeyBtn = document.getElementById('downloadKeyBtn');
+        const encProgressContainer = document.getElementById('encProgressContainer');
+        const encProgressFill = document.getElementById('encProgressFill');
+        const encProgressText = document.getElementById('encProgressText');
+        const encError = document.getElementById('encError');
+
+        const srjsrcFileInput = document.getElementById('srjsrcFileInput');
+        const phraseDec = document.getElementById('phraseInputDec');
+        const keyImageInput = document.getElementById('keyImageInput');
+        const decryptBtn = document.getElementById('decryptBtn');
+        const decProgressContainer = document.getElementById('decProgressContainer');
+        const decProgressFill = document.getElementById('decProgressFill');
+        const decProgressText = document.getElementById('decProgressText');
+        const decError = document.getElementById('decError');
+        const decoyNote = document.getElementById('decoyNote');
+
+        const canvas = document.getElementById('hiddenCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // ---------- Utility: Canvas fingerprint generation ----------
+        function generateCanvasKey(phrase) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#e2e8f0';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            // wrap text roughly
+            const words = phrase.split(' ');
+            let line = '';
+            let y = 100;
+            const lineHeight = 30;
+            for (let w of words) {
+                const testLine = line ? line + ' ' + w : w;
+                if (ctx.measureText(testLine).width > 180) {
+                    ctx.fillText(line, 100, y);
+                    line = w;
+                    y += lineHeight;
+                } else {
+                    line = testLine;
+                }
+            }
+            if (line) ctx.fillText(line, 100, y);
+            return canvas.toDataURL('image/png'); // includes "data:image/png;base64,..."
+        }
+
+        // Extract pure base64 string from data URL
+        function base64FromDataURL(dataUrl) {
+            return dataUrl.split(',')[1];
+        }
+
+        // ---------- Progress helpers ----------
+        function showEncProgress() {
+            encProgressContainer.style.display = 'block';
+        }
+        function updateEncProgress(percent, text) {
+            encProgressFill.style.width = percent + '%';
+            encProgressText.textContent = text;
+        }
+        function hideEncProgress() {
+            encProgressContainer.style.display = 'none';
+        }
+
+        function showDecProgress() {
+            decProgressContainer.style.display = 'block';
+        }
+        function updateDecProgress(percent, text) {
+            decProgressFill.style.width = percent + '%';
+            decProgressText.textContent = text;
+        }
+        function hideDecProgress() {
+            decProgressContainer.style.display = 'none';
+        }
+
+        // ---------- Encryption ----------
+        encryptBtn.addEventListener('click', async () => {
+            encError.textContent = '';
+            const folderFiles = folderInput.files;
+            if (!folderFiles || folderFiles.length === 0) {
+                encError.textContent = 'Please select a folder.';
+                return;
+            }
+            const phrase = phraseEnc.value.trim();
+            if (!phrase) {
+                encError.textContent = 'Please enter a memorable phrase.';
+                return;
+            }
+            encryptBtn.disabled = true;
+            showEncProgress();
+            updateEncProgress(5, 'Generating canvas key...');
+
+            try {
+                // 1. Canvas fingerprint key
+                const keyDataUrl = generateCanvasKey(phrase);
+                const canvasBase64 = base64FromDataURL(keyDataUrl);
+                const Lc = canvasBase64.length;   // number of segments
+                updateEncProgress(10, `Canvas key ready (length ${Lc})`);
+
+                // 2. Build zip from selected folder (preserve relative paths)
+                const zip = new JSZip();
+                const filesArray = Array.from(folderFiles);
+                // Determine common base path if needed
+                let basePath = '';
+                if (filesArray.length > 0) {
+                    const firstRel = filesArray[0].webkitRelativePath;
+                    const slashIndex = firstRel.indexOf('/');
+                    basePath = slashIndex >= 0 ? firstRel.substring(0, slashIndex + 1) : '';
+                }
+                for (let file of filesArray) {
+                    const relPath = file.webkitRelativePath.startsWith(basePath)
+                        ? file.webkitRelativePath.substring(basePath.length)
+                        : file.webkitRelativePath;
+                    if (relPath) {
+                        zip.file(relPath, file);
+                    }
+                }
+                updateEncProgress(20, 'Compressing folder...');
+                const zipBlob = await zip.generateAsync({ type: 'blob' }, (meta) => {
+                    const pct = 20 + Math.floor(meta.percent * 0.3);
+                    updateEncProgress(pct, 'Compressing folder...');
+                });
+                updateEncProgress(50, 'Folder compressed.');
+
+                // 3. Base64 encode the zip blob
+                const archiveBase64 = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const dataUrl = reader.result;
+                        resolve(base64FromDataURL(dataUrl));  // strip prefix
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(zipBlob);
+                });
+                updateEncProgress(65, 'Base64 encoded.');
+
+                // 4. Split archive base64 into Lc segments
+                const L = archiveBase64.length;
+                const segments = [];
+                for (let i = 0; i < Lc; i++) {
+                    const start = Math.floor((i / Lc) * L);
+                    const end = Math.floor(((i + 1) / Lc) * L);
+                    segments.push(archiveBase64.slice(start, end));
+                }
+                updateEncProgress(70, `Split into ${Lc} segments.`);
+
+                // 5. Name segments using indexed canvas base64 characters
+                const segmentFiles = [];
+                const charCount = {};
+                for (let i = 0; i < Lc; i++) {
+                    const ch = canvasBase64[i];
+                    if (!charCount[ch]) charCount[ch] = 0;
+                    charCount[ch]++;
+                    const filename = ch + charCount[ch];
+                    segmentFiles.push({ name: filename, data: segments[i] });
+                }
+                updateEncProgress(75, 'Naming segments...');
+
+                // 6. Recompress all segments into a new zip
+                const segmentZip = new JSZip();
+                for (let sf of segmentFiles) {
+                    segmentZip.file(sf.name, sf.data);
+                }
+                updateEncProgress(80, 'Recompressing segments...');
+                const finalZipBlob = await segmentZip.generateAsync({ type: 'blob' }, (meta) => {
+                    const pct = 80 + Math.floor(meta.percent * 0.2);
+                    updateEncProgress(pct, 'Recompressing segments...');
+                });
+
+                // 7. Final obfuscation: provide as .srjsrc download
+                updateEncProgress(100, 'Encryption complete.');
+                const url = URL.createObjectURL(finalZipBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'encrypted.srjsrc';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+
+                // Show key image & allow download
+                keyImageEnc.src = keyDataUrl;
+                keyPreviewEnc.style.display = 'block';
+                downloadKeyBtn.onclick = () => {
+                    const link = document.createElement('a');
+                    link.href = keyDataUrl;
+                    link.download = 'srj-key.png';
+                    link.click();
+                };
+
+            } catch (err) {
+                encError.textContent = 'Encryption failed: ' + err.message;
+                console.error(err);
+            } finally {
+                encryptBtn.disabled = false;
+                hideEncProgress();
+            }
+        });
+
+        // ---------- Decryption ----------
+        decryptBtn.addEventListener('click', async () => {
+            decError.textContent = '';
+            decoyNote.style.display = 'none';
+            const srjsrcFile = srjsrcFileInput.files[0];
+            if (!srjsrcFile) {
+                decError.textContent = 'Please select a .srjsrc file.';
+                return;
+            }
+            const phrase = phraseDec.value.trim();
+            const keyImageFile = keyImageInput.files[0];
+            if (!phrase && !keyImageFile) {
+                decError.textContent = 'Provide the memorable phrase or upload the key image.';
+                return;
+            }
+            decryptBtn.disabled = true;
+            showDecProgress();
+            updateDecProgress(5, 'Reading key...');
+
+            try {
+                let canvasBase64;
+                if (keyImageFile) {
+                    // Use uploaded key image – read as data URL and extract base64
+                    const keyDataUrl = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(keyImageFile);
+                    });
+                    canvasBase64 = base64FromDataURL(keyDataUrl);
+                } else {
+                    // Generate from phrase
+                    const keyDataUrl = generateCanvasKey(phrase);
+                    canvasBase64 = base64FromDataURL(keyDataUrl);
+                }
+                const Lc = canvasBase64.length;
+                updateDecProgress(10, `Key length ${Lc}`);
+
+                // Open .srjsrc as zip
+                const segmentZip = await JSZip.loadAsync(srjsrcFile);
+                updateDecProgress(30, 'Opened archive.');
+
+                // Build char occurrence mapping from canvasBase64
+                const charPosMap = {}; // char -> array of indices
+                for (let i = 0; i < Lc; i++) {
+                    const ch = canvasBase64[i];
+                    if (!charPosMap[ch]) charPosMap[ch] = [];
+                    charPosMap[ch].push(i);
+                }
+                // Reconstruct ordered segments
+                const orderedSegments = new Array(Lc);
+                const filesObj = {};
+                const fileNames = Object.keys(segmentZip.files).filter(n => !segmentZip.files[n].dir);
+                const totalFiles = fileNames.length;
+
+                // Pre-load all file contents
+                let loaded = 0;
+                for (let name of fileNames) {
+                    const content = await segmentZip.file(name).async('string');
+                    filesObj[name] = content;
+                    loaded++;
+                    const pct = 30 + Math.floor((loaded / totalFiles) * 30);
+                    updateDecProgress(pct, `Loading segments (${loaded}/${totalFiles})`);
+                }
+
+                // Match file names to positions
+                const charCount = {};
+                for (let i = 0; i < Lc; i++) {
+                    const ch = canvasBase64[i];
+                    charCount[ch] = (charCount[ch] || 0) + 1;
+                    const expectedName = ch + charCount[ch];
+                    if (filesObj.hasOwnProperty(expectedName)) {
+                        orderedSegments[i] = filesObj[expectedName];
+                    } else {
+                        throw new Error(`Missing segment: ${expectedName}. Wrong key?`);
+                    }
+                }
+                updateDecProgress(65, 'Segments reassembled.');
+
+                // Concatenate to form archive base64
+                const archiveB64 = orderedSegments.join('');
+                updateDecProgress(70, 'Base64 reconstructed.');
+
+                // Decode base64 to binary
+                const binaryStr = atob(archiveB64);
+                const bytes = new Uint8Array(binaryStr.length);
+                for (let i = 0; i < binaryStr.length; i++) {
+                    bytes[i] = binaryStr.charCodeAt(i);
+                }
+                updateDecProgress(80, 'Decoding zip...');
+
+                // Try to open as zip (original archive)
+                const originalZip = await JSZip.loadAsync(bytes);
+                updateDecProgress(90, 'Extracting files...');
+
+                // Extract all files and offer download as a new zip
+                const restoredZip = new JSZip();
+                const extractPromises = [];
+                originalZip.forEach((relativePath, file) => {
+                    if (!file.dir) {
+                        extractPromises.push(
+                            file.async('uint8array').then(data => {
+                                restoredZip.file(relativePath, data);
+                            })
+                        );
+                    }
+                });
+                await Promise.all(extractPromises);
+                updateDecProgress(95, 'Building restored folder...');
+                const outputBlob = await restoredZip.generateAsync({ type: 'blob' });
+                updateDecProgress(100, 'Decryption successful!');
+
+                // Download restored folder
+                const url = URL.createObjectURL(outputBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'restored_folder.zip';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+
+            } catch (err) {
+                console.error('Decryption error:', err);
+                // Anti‑reverse engineering: generate decoy image folder
+                decoyNote.style.display = 'block';
+                decoyNote.textContent = '⚠️ Decryption completed. (Decoy output generated due to invalid key.)';
+                try {
+                    const decoyZip = new JSZip();
+                    const decoyFolder = decoyZip.folder('decoy_images');
+                    // Generate 3 random canvas images
+                    for (let i = 0; i < 3; i++) {
+                        const c = document.createElement('canvas');
+                        c.width = 200; c.height = 200;
+                        const cx = c.getContext('2d');
+                        cx.fillStyle = `rgb(${Math.floor(Math.random()*256)},${Math.floor(Math.random()*256)},${Math.floor(Math.random()*256)})`;
+                        cx.fillRect(0,0,200,200);
+                        cx.fillStyle = '#fff';
+                        cx.font = '20px Arial';
+                        cx.fillText('Decoy '+(i+1), 40, 100);
+                        const dataUrl = c.toDataURL('image/png');
+                        const b64 = base64FromDataURL(dataUrl);
+                        decoyFolder.file(`image_${i+1}.png`, b64, {base64: true});
+                    }
+                    const decoyBlob = await decoyZip.generateAsync({type:'blob'});
+                    const url = URL.createObjectURL(decoyBlob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'decoy_output.zip';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                } catch (e) {}
+            } finally {
+                decryptBtn.disabled = false;
+                hideDecProgress();
+            }
+        });
+
+    })();
+</script>
+</body>
+</html>
